@@ -187,6 +187,7 @@ button{cursor:pointer}
 #screen.shake{animation:shake .4s linear 3}
 @keyframes shake{25%{transform:translateX(-10px) rotate(-1deg)}75%{transform:translateX(10px) rotate(1deg)}}
 
+.side .tally{font-size:clamp(22px,3vw,38px); letter-spacing:2px; min-height:1.2em}
 /* ---------- Result ---------- */
 .winner{display:flex; flex-direction:column; align-items:center; gap:4px; background:var(--c); border-radius:40px; padding:18px 44px 24px; box-shadow:0 0 0 8px var(--sun), 0 0 80px rgba(255,210,63,.4); animation:pop .6s cubic-bezier(.3,1.6,.5,1)}
 .winner .em{font-size:clamp(90px,18vh,180px); line-height:1}
@@ -207,6 +208,14 @@ button{cursor:pointer}
 .card b{font-size:clamp(30px,4.4vw,52px); text-wrap:balance}
 @keyframes flip{from{transform:perspective(800px) rotateY(180deg) scale(.6)}}
 
+.heroes{display:flex; gap:clamp(20px,4vw,50px); justify-content:center; flex-wrap:wrap; padding-top:30px}
+.hero-card{display:flex; flex-direction:column; align-items:center; gap:6px; animation:pop .8s cubic-bezier(.3,1.6,.5,1) both}
+.hero-pic{position:relative; width:clamp(160px,30vh,280px); aspect-ratio:1; border-radius:50%; background:var(--paper); box-shadow:0 0 0 10px var(--c), 0 0 0 18px var(--sun), 0 0 90px rgba(255,210,63,.6); display:grid; place-items:center; font-size:clamp(100px,19vh,180px); line-height:1}
+.hero-pic .ph{width:100%; height:100%; box-shadow:none}
+.hero-pic .crown-top{position:absolute; top:-0.62em; left:50%; transform:translateX(-50%) rotate(-12deg); font-size:clamp(70px,12vh,120px); filter:drop-shadow(0 6px 6px rgba(0,0,0,.3)); animation:crownIn 1s .5s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes crownIn{from{transform:translate(-50%,-120px) rotate(-40deg); opacity:0}}
+.hero-name{font-size:clamp(34px,5.5vw,70px); font-weight:800; color:var(--paper); text-shadow:0 5px 0 var(--sky-deep); margin-top:10px}
+.hero-sub{font-size:clamp(20px,2.6vw,30px); font-weight:800; color:var(--sun)}
 .end-title{font-size:clamp(44px,8vw,90px); font-weight:800; color:var(--sun); text-align:center; text-shadow:0 6px 0 var(--sky-deep)}
 .crowns{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; max-width:1100px; width:100%; margin:0 auto}
 .crown{background:var(--paper); color:var(--ink); border-radius:28px; padding:20px; box-shadow:0 10px 0 var(--sky-deep); display:flex; flex-direction:column; align-items:center; gap:4px; text-align:center; animation:pop .6s cubic-bezier(.3,1.6,.5,1) both; border-top:10px solid var(--c)}
@@ -285,6 +294,7 @@ button{cursor:pointer}
   </section>
 
   <section id="end" hidden>
+    <div class="heroes" id="heroes"></div>
     <div class="end-title">كلكم أبطال! 🏆</div>
     <div class="crowns" id="crowns"></div>
     <div class="end-actions">
@@ -318,8 +328,6 @@ const DUELS = [
    how:['كل واحد بدوره، إله ١٠ ثواني','انزل لتحت كأنك قاعد، وارجع وقّف','الجمهور بيعدّ كل مرة']},
   {id:'rhythm', mode:'rhythm', i:'🥁', t:'مين بيقلّد الإيقاع صح؟',
    how:['الشاشة بتعرض إيقاع: 👏 صفقة، 🦶 دبكة، 🙌 إيدين لفوق','كل واحد بدوره بيعيده بنفس الترتيب','اللي بيعيده صح بيربح']},
-  {id:'dino',   mode:'togetherTimer', secs:10, i:'🦖', t:'مين أقوى ديناصور؟', go:'رااااه!',
-   how:['الاتنين مع بعض','اعملوا إيديكم زي المخالب، وامشوا بخطوات كبيرة وصرّخوا رااااه','الجمهور بيصفّق للأقوى']},
   {id:'robot',  mode:'togetherTimer', secs:10, i:'🤖', t:'مين أحلى روبوت؟', go:'بيب بوب!',
    how:['الاتنين مع بعض','امشوا بحركات ناشفة ومقطّعة','واحكوا بصوت روبوت: أنا روبوت، بيب بوب']},
   {id:'face',   mode:'togetherTimer', secs:8,  i:'🤪', t:'مين بيعمل أضحك وجه؟', go:'أضحك وجه!',
@@ -328,7 +336,7 @@ const DUELS = [
    how:['الاتنين مع بعض','ارفعوا إيديكم، كشّروا، وصرّخوا أعلى صوت','الجمهور بيصفّق للأخوف']},
   {id:'dizzy',  mode:'togetherTimer', secs:14, i:'😵', t:'مين ما بيدوخ؟', go:'لفّوا… وامشوا!',
    how:['الاتنين بيلفّوا حوالين حالهم ٥ لفّات','وبعدين بيمشوا لعند الشاشة بخط مستقيم','اللي بيمشي أحسن بيربح']},
-  {id:'freeze', mode:'freeze', i:'🗿', t:'مبارزة التمثال',
+  {id:'freeze', mode:'freeze', i:'🗿', t:'مبارزة التمثال', on:{i:'💃',t:'ارقصوا!'}, off:{i:'🗿',t:'وقّفوا! ولا حركة!'}, judge:'مين ما تحرّك؟',
    how:['لما تشتغل الموسيقى: ارقصوا','لما توقف: وقّفوا مكانكم ولا حركة','أول واحد بيتحرك بيخسر']},
   {id:'flam',   mode:'togetherWatch', i:'🦩', t:'مين بيضل واقف على رجل وحدة؟', go:'رجل وحدة!', stop:'🏁 حدا نزّل رجله',
    how:['الاتنين بيرفعوا رجل وحدة عن الأرض','ممنوع تنزّلوها أو تمسكوا بشي','آخر واحد بيضل واقف بيربح']},
@@ -338,6 +346,14 @@ const DUELS = [
    how:['الاتنين بيوقفوا عند الحيط','بيمشوا لعند الشاشة بأبطأ ما فيهم، ممنوع يوقفوا','اللي بيوصل آخر واحد بيربح']},
   {id:'voice',  mode:'seqWatch', i:'🗣️', t:'مين بيطوّل «آآآآ» أكتر؟', go:'آآآآآآ!',
    how:['كل واحد بدوره','خذ نفس كبير وقول «آآآآ» بدون ما توقف','الساعة بتقيس، والأطول بيربح']},
+  {id:'touch',  mode:'touch', i:'👆', t:'إلمس!',
+   how:['بتطلع صورة عالشاشة: أنف، إذن، رجل…','أول واحد بيلمسها عند حاله بياخد نقطة','٥ مرات، وكل مرة أسرع!']},
+  {id:'updown', mode:'freeze', i:'🚀', t:'الأرض والسما', on:{i:'🚀',t:'نطّوا لفوق!'}, off:{i:'⬇️',t:'اقعدوا عالأرض!'}, judge:'مين قعد أول؟',
+   how:['لما تشتغل الموسيقى: نطّوا لفوق','لما توقف: اقعدوا عالأرض بسرعة','أول واحد بيقعد بيربح']},
+  {id:'carry',  mode:'togetherWatch', i:'🎒', t:'حمّل وامشي', go:'شوي شوي… لا توقّعها!', stop:'🏁 حدا رجع', judge:'مين رجع أول؟',
+   how:['حطّوا مخدة على راسكم','امشوا لعند الحيط وارجعوا بدون ما توقع','إذا وقعت: ارجع للبداية. أول واحد بيرجع بيربح']},
+  {id:'memory', mode:'memory', i:'👀', t:'شو تغيّر؟',
+   how:['طّلعوا منيح عالحيوانات عالشاشة','غمّضوا… وواحد منهم رح يختفي!','أول واحد بيصرّخ مين اختفى بياخد نقطة']},
   {id:'frog',   mode:'seqFree', i:'🐸', t:'مين بينطّ أبعد نطّة؟', go:'نطّة وحدة لقدّام!',
    how:['كل واحد بدوره بينطّ نطّة وحدة لقدّام','حطّوا مخدة أو جرابة مكان ما وصل','الأبعد بيربح']}
 ];
@@ -348,17 +364,19 @@ const TEAM_TASKS = [
   {kind:'fast', i:'🪑', t:'مين بيقعد أسرع؟', do:'كل الفريق بيقعد عالأرض'},
   {kind:'fast', i:'🙌', t:'مين بيرفع إيديه أسرع؟', do:'حطّوا إيديكم فوق بعض بالنص، وارفعوها مع بعض وصرّخوا يلااا'},
   {kind:'fast', i:'🤗', t:'مين بيعمل حضن جماعي أسرع؟', do:'كل الفريق بيحضن بعض مع بعض'},
+  {kind:'relay', i:'🏃', t:'سباق التتابع!', do:'كل واحد بدوره بينطّ ٥ نطّات وبيضرب كفّ للي بعده'},
+  {kind:'relay', i:'🏃', t:'سباق التتابع!', do:'كل واحد بدوره بيركض لعند الحيط ورجاع وبيضرب كفّ للي بعده'},
   {kind:'loud', i:'🦁', t:'مين أعلى زئير؟', do:'كل الفريق بيصرّخ زي الأسد: رااااه'},
   {kind:'loud', i:'📣', t:'مين أعلى هتاف؟', do:'صرّخوا اسم فريقكم: أحمر أحمر، أزرق أزرق'},
   {kind:'loud', i:'👏', t:'مين أقوى تصفيق؟', do:'صفّقوا ودبّكوا برجليكم أقوى ما فيكم'},
   {kind:'best', i:'🗿', t:'مين أحلى تمثال جماعي؟', do:'وقّفوا قريبين من بعض واعملوا شكل حلو، وما حدا يتحرك'},
   {kind:'best', i:'💃', t:'مين أحلى رقصة؟', do:'ارقصوا كلكم نفس الحركة مع بعض'}
 ];
-const TEAM_RULE = {fast:'أول فريق بيخلّص بيربح', loud:'أعلى فريق بيربح', best:'أحلى فريق بيربح'};
-const ADULT_DUELS = ['dino','robot','face','monster','dizzy','flam','serious'];
+const TEAM_RULE = {relay:'لما كل الفريق يخلّص… أول فريق بيربح!', fast:'أول فريق بيخلّص بيربح', loud:'أعلى فريق بيربح', best:'أحلى فريق بيربح'};
+const ADULT_DUELS = ['carry','touch','robot','face','monster','dizzy','flam','serious'];
 const RHYTHM = [{e:'👏',f:900},{e:'🦶',f:150},{e:'🙌',f:600}];
 const TITLES = ['⭐ نجم اللعبة','⚡ الصاروخ','💪 البطل القوي','😂 ملك الضحك','💃 أحلى رقّاص','🦁 الأسد الشجاع','🌈 قلب الفريق','🎉 نجم الحفلة'];
-const DUEL_TITLE = {dino:'🦖 أقوى ديناصور',robot:'🤖 أحلى روبوت',monster:'👹 أخوف وحش',face:'🤪 أضحك وجه',turtle:'🐢 أبطأ سلحفاة',freeze:'🗿 أحلى تمثال',rhythm:'🥁 ملك الإيقاع',jump:'🐸 ملك النطّ',frog:'🐸 أبعد نطّة',voice:'🗣️ أطول صوت',flam:'🦩 ملك التوازن',serious:'😐 أجدّ واحد',dizzy:'😵 ما بيدوخ',clap:'👏 ملك التصفيق',squat:'💪 البطل القوي'};
+const DUEL_TITLE = {touch:'👆 أسرع إيد',updown:'🚀 ملك النطّ والقعدة',carry:'🎒 ملك التوازن',memory:'👀 عيون الصقر',robot:'🤖 أحلى روبوت',monster:'👹 أخوف وحش',face:'🤪 أضحك وجه',turtle:'🐢 أبطأ سلحفاة',freeze:'🗿 أحلى تمثال',rhythm:'🥁 ملك الإيقاع',jump:'🐸 ملك النطّ',frog:'🐸 أبعد نطّة',voice:'🗣️ أطول صوت',flam:'🦩 ملك التوازن',serious:'😐 أجدّ واحد',dizzy:'😵 ما بيدوخ',clap:'👏 ملك التصفيق',squat:'💪 البطل القوي'};
 
 /* ---------- State ---------- */
 let kids=[], adults=[], G=null, run=0;
@@ -785,20 +803,41 @@ async function playDuel(D,A,B,id){
       const stop=stopwatch(id,'#watch');
       try{ await choose([{k:'s',cls:'pink',html:D.stop}], id); } finally { stop(); }
       SFX.buzz();
-      return pickSide(id, D.id==='turtle'?{label:'مين أبطأ؟',note:'الأبطأ هو الربحان! اكبسوا عليه'}:{});
+      return pickSide(id, D.id==='turtle'?{label:'مين أبطأ؟',note:'الأبطأ هو الربحان! اكبسوا عليه'}:{label:D.judge||'مين ربح؟'});
     }
     case 'freeze': {
       arena(A,B,'');
       for(let r=1;r<=4;r++){
-        sides({a:'on',b:'on'}); setMid(`<div class="icon">💃</div><div class="say">ارقصوا!</div>`);
-        if(musicOK) setMusic('dance',true); else { Beat.start(); Beat.fast(r>2); } if(r===1) speak('ارقصوا!');
+        sides({a:'on',b:'on'}); setMid(`<div class="icon">${D.on.i}</div><div class="say">${D.on.t}</div>`);
+        if(musicOK) setMusic('dance',true); else { Beat.start(); Beat.fast(r>2); } if(r===1) speak(D.on.t);
         await sleep(3500+Math.random()*4000); alive(id); if(musicOK) setMusic('off',true); else Beat.stop();
-        sides({}); setMid(`<div class="icon">🗿</div><div class="say" style="color:var(--pink)">وقّفوا! ولا حركة!</div>`);
-        SFX.buzz(); speak('وقّفوا! ولا حركة!'); await sleep(2600); alive(id);
-        const k=await pickSide(id,{label:'مين ما تحرّك؟',note:'اكبسوا على الفائز',again:r<4});
+        sides({}); setMid(`<div class="icon">${D.off.i}</div><div class="say" style="color:var(--pink)">${D.off.t}</div>`);
+        SFX.buzz(); speak(D.off.t); await sleep(D.id==='updown'?1800:2600); alive(id);
+        const k=await pickSide(id,{label:D.judge,note:'اكبسوا على الفائز',again:r<4});
         if(k!=='again'){ setMusic('low'); return k; }
       }
       setMusic('low'); return 'tie';
+    }
+    case 'touch': {
+      arena(A,B,''); sides({a:'on',b:'on'});
+      const parts=shuffle(BODY).slice(0,5);
+      return quickfire(A,B,id,parts.length, async r=>{
+        const pt=parts[r];
+        setMid(`<div class="say">جاهزين…</div>`); await sleep(900-r*120); alive(id);
+        setMid(`<div class="icon pulse" style="font-size:clamp(90px,18vh,190px)">${pt.e}</div><div class="say">إلمس ${pt.t}!</div>`);
+        SFX.go(); speak('إلمس '+pt.t);
+      }, 'مين لمس أول؟');
+    }
+    case 'memory': {
+      arena(A,B,''); sides({a:'on',b:'on'});
+      return quickfire(A,B,id,3, async r=>{
+        const n=3+r, set=shuffle(ANIMALS).slice(0,n), gone=Math.floor(Math.random()*n);
+        const grid=list=>`<div class="beats">${list.map(e=>`<div class="beat">${e}</div>`).join('')}</div>`;
+        setMid(`<div class="say">طّلعوا منيح!</div>${grid(set)}`); speak('طّلعوا منيح!'); await sleep(3500+r*800); alive(id);
+        setMid(`<div class="icon">🙈</div><div class="say">غمّضوا!</div>`); SFX.drum(); speak('غمّضوا!'); await sleep(2200); alive(id);
+        setMid(`<div class="say">مين اختفى؟</div>${grid(set.map((e,i)=>i===gone?'❓':e))}`); SFX.go(); speak('فتّحوا! مين اختفى؟');
+        return set[gone];
+      }, 'مين عرف أول؟');
     }
     case 'rhythm': {
       arena(A,B,''); let len=3; setMusic('low');
@@ -819,6 +858,29 @@ async function playDuel(D,A,B,id){
     }
   }
 }
+
+/* Quick-fire: several short points, the parent taps whoever got each one first. Returns 'a' | 'b' | 'tie' */
+async function quickfire(A,B,id,rounds,showRound,label){
+  const sc={a:0,b:0}; const a=$('.side.a'), b=$('.side.b');
+  const tally=()=>{ for(const [el,k] of [[a,'a'],[b,'b']]){ let t=el.querySelector('.tally'); if(!t){ t=document.createElement('div'); t.className='tally'; el.append(t); } t.textContent='⭐'.repeat(sc[k])||'·'; } };
+  tally();
+  for(let r=0;r<rounds;r++){
+    const reveal=await showRound(r); alive(id);
+    $('#mid').insertAdjacentHTML('beforeend',`<div class="note">${label}</div><div class="controls"><button class="tie" data-k="tie">🤝 مع بعض</button></div>`);
+    [a,b].forEach(s=>{ s.classList.add('pick'); s.tabIndex=0; });
+    const k=await new Promise((res,rej)=>{ a.onclick=()=>res('a'); b.onclick=()=>res('b');
+      $('#mid [data-k="tie"]').onclick=()=>res('tie');
+      const iv=setInterval(()=>{ if(id!==run){ clearInterval(iv); rej(new Quit()); } else if(!document.body.contains(a)) clearInterval(iv); },200); });
+    [a,b].forEach(s=>{ s.classList.remove('pick'); s.onclick=null; s.tabIndex=-1; });
+    if(k==='tie'){ sc.a++; sc.b++; } else sc[k]++;
+    tally(); SFX.ting();
+    if(reveal){ setMid(`<div class="icon pulse">${reveal}</div><div class="say">هاد اللي اختفى!</div>`); await sleep(1600); alive(id); }
+    else await sleep(500);
+  }
+  return sc.a===sc.b?'tie':(sc.a>sc.b?'a':'b');
+}
+const BODY=[{e:'👃',t:'أنفك'},{e:'👂',t:'إذنك'},{e:'🦶',t:'رجلك'},{e:'🤚',t:'إيدك'},{e:'👄',t:'تمّك'},{e:'👀',t:'عيونك'},{e:'🦵',t:'ركبتك'},{e:'🫃',t:'بطنك'},{e:'💆',t:'راسك'},{e:'💪',t:'كتفك'}];
+const ANIMALS=['🐶','🐱','🐰','🦁','🐸','🐵','🐘','🦒','🐧','🐢','🐔','🐟','🦋','🐮'];
 
 /* Result: winner card, then stars fly into the scoreboard */
 function jarsHTML(){ return `<div class="jars">${kids.map((k,i)=>`<div class="jar" id="jar-${i}" style="--c:${k.c}"><div class="em">${av(k)}</div><div class="nm">${esc(k.name)}</div><div class="st">⭐ ${toAr(k.stars)}</div></div>`).join('')}</div>`; }
@@ -875,7 +937,21 @@ async function teamRound(id,mult){
   setMusic('low'); arena(R,Bl,`<div class="icon">${T.i}</div><div class="say">${T.t}</div>`); sides({a:'on',b:'on'});
   await count321(id);
   let k;
-  if(T.kind==='fast'){
+  if(T.kind==='relay'){
+    const need=Math.max(red.length,blue.length); const done={a:0,b:0};
+    const a=$('.side.a'), b=$('.side.b');
+    const mark=()=>{ for(const [el,key,team] of [[a,'a',red],[b,'b',blue]]){
+      el.querySelectorAll('.members span').forEach((m,j)=>{ m.style.opacity = j<Math.min(done[key],team.length)||done[key]>=need?'.45':'1'; m.style.textDecoration=j<done[key]?'line-through':'none'; });
+      let t=el.querySelector('.tally'); if(!t){ t=document.createElement('div'); t.className='tally'; el.append(t); }
+      t.textContent='✅'.repeat(done[key])+'⬜'.repeat(need-done[key]); } };
+    setMid(`<div class="icon">${T.i}</div><div class="say">يلا يلا!</div><div class="note">كل ما حدا يخلّص… اكبسوا على فريقه</div>${red.length!==blue.length?`<div class="note">الفريق الأصغر: أول واحد فيه بيرجع يلعب بالآخر</div>`:''}`);
+    Beat.start(); mark(); [a,b].forEach(s=>{ s.classList.add('pick'); s.tabIndex=0; });
+    k=await new Promise((res,rej)=>{
+      const tap=key=>{ if(done[key]>=need) return; done[key]++; SFX.ting(); mark(); if(done[key]>=need) res(key); };
+      a.onclick=()=>tap('a'); b.onclick=()=>tap('b');
+      const iv=setInterval(()=>{ if(id!==run){ clearInterval(iv); rej(new Quit()); } else if(!document.body.contains(a)) clearInterval(iv); },200); });
+    [a,b].forEach(s=>{ s.classList.remove('pick'); s.onclick=null; }); Beat.stop();
+  } else if(T.kind==='fast'){
     setMid(`<div class="icon">${T.i}</div><div class="say">يلا يلا!</div>${timerHTML(15)}<div class="note">اكبسوا على أول فريق بيخلّص</div>`);
     const tp=countdownTimer(15,id,{});
     const a=$('.side.a'), b=$('.side.b'); [a,b].forEach(s=>{ s.classList.add('pick'); s.tabIndex=0; });
@@ -920,11 +996,13 @@ function endGame(id){
     const won=Object.keys(kids[i].byDuel).map(d=>DUEL_TITLE[d]).filter(t=>t&&!used.has(t));
     const t=won[0]||shuffle(TITLES.slice(1)).find(x=>!used.has(x))||'🌟 بطل'; titles[i]=t; used.add(t);
   });
+  const top=kids[order[0]].stars; const best=order.filter(i=>kids[i].stars===top).slice(0,3);
+  $('#heroes').innerHTML=best.map((i,n)=>`<div class="hero-card" style="animation-delay:${n*.2}s"><div class="hero-pic" style="--c:${kids[i].c}"><span class="crown-top">👑</span>${av(kids[i])}</div><div class="hero-name">${esc(kids[i].name)}</div><div class="hero-sub">⭐ بطل اللعبة ⭐ ${toAr(kids[i].stars)}</div></div>`).join('');
   const c=$('#crowns'); c.innerHTML='';
   order.forEach((i,n)=>{ const k=kids[i]; const d=document.createElement('div'); d.className='crown'; d.style.animationDelay=(n*.15)+'s'; d.style.setProperty('--c',k.c);
     d.innerHTML=`<div class="c">👑</div><div class="em">${av(k)}</div><div class="nm">${esc(k.name)}</div><div class="ttl">${titles[i]}</div><div class="st">⭐ ${toAr(k.stars)}</div>`; c.append(d); });
   show('end'); confetti(80); SFX.fanfare(); setMusic('high');
-  speak('برافو! كلكم أبطال!');
+  speak(`بطل اللعبة: ${best.map(i=>kids[i].name).join(' و ')}! وبرافو، كلكم أبطال!`);
 }
 
 /* ---------- Menu & controls ---------- */
