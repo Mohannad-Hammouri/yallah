@@ -22,6 +22,21 @@
 }
 html,body{height:100%}
 body{background-color:var(--sky); background-image:radial-gradient(rgba(255,255,255,.12) 2px,transparent 2.5px); background-size:34px 34px; color:var(--paper); font-family:var(--display); direction:rtl; overflow-x:hidden; transition:background-color .4s}
+body:not(.arena-mode){background-color:var(--sky); background-image:
+  radial-gradient(circle at 12% 18%, rgba(255,255,255,.22) 0 90px, transparent 91px),
+  radial-gradient(circle at 88% 12%, rgba(255,210,63,.35) 0 70px, transparent 71px),
+  radial-gradient(circle at 92% 78%, rgba(255,92,138,.28) 0 120px, transparent 121px),
+  radial-gradient(circle at 6% 86%, rgba(31,199,119,.28) 0 110px, transparent 111px),
+  radial-gradient(rgba(255,255,255,.14) 2px, transparent 2.5px),
+  linear-gradient(180deg, #4A86FF 0%, #2F6BF0 55%, #3A5BE8 100%);
+  background-size:auto,auto,auto,auto,34px 34px,auto; background-attachment:fixed}
+.deco{position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden}
+.deco span{position:absolute; font-size:clamp(34px,5vw,64px); opacity:.55; animation:floaty 7s ease-in-out infinite}
+.deco span:nth-child(2n){animation-duration:9s; animation-delay:-2s}
+.deco span:nth-child(3n){animation-duration:11s; animation-delay:-4s}
+@keyframes floaty{50%{transform:translateY(-22px) rotate(8deg)}}
+body.arena-mode .deco{display:none}
+#app{position:relative; z-index:1}
 body.arena-mode{background-color:var(--night); background-image:radial-gradient(rgba(255,255,255,.06) 2px,transparent 2.5px)}
 #app{min-height:100%; height:100%; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px)); padding-block:14px; box-sizing:border-box; display:flex; flex-direction:column}
 section{flex:1; display:flex; flex-direction:column; gap:14px; min-height:0}
@@ -108,7 +123,7 @@ button{cursor:pointer}
 .booth .link{border:0; background:none; color:var(--mist); font-size:18px; font-weight:700; text-decoration:underline}
 
 /* Sticky start */
-.start-bar{position:sticky; bottom:0; display:flex; flex-direction:column; align-items:center; gap:8px; padding-block:14px 4px; background:linear-gradient(transparent, var(--sky) 40%); margin-top:-8px}
+.start-bar{position:sticky; bottom:0; display:flex; flex-direction:column; align-items:center; gap:8px; padding-block:14px 4px; background:none; margin-top:-8px; filter:drop-shadow(0 10px 18px rgba(20,30,90,.35))}
 .err{color:var(--paper); background:var(--pink); border-radius:16px; padding:10px 16px; font-weight:800; font-size:18px; margin:0; text-align:center}
 
 /* ---------- HUD ---------- */
@@ -236,6 +251,11 @@ button{cursor:pointer}
 @media (prefers-reduced-motion:reduce){ *{animation:none!important; transition:none!important} }
 </style>
 
+<div class="deco" aria-hidden="true">
+  <span style="top:8%;left:4%">☁️</span><span style="top:22%;right:5%">⭐</span><span style="top:48%;left:2%">🎈</span>
+  <span style="top:70%;right:3%">🎈</span><span style="bottom:6%;left:10%">⭐</span><span style="top:4%;right:22%">☁️</span>
+  <span style="bottom:14%;right:18%">✨</span><span style="top:36%;right:2%">🌈</span>
+</div>
 <div id="app">
   <section id="setup">
     <div class="setup-wrap">
@@ -263,9 +283,9 @@ button{cursor:pointer}
             <select id="rounds"><option>8</option><option selected>12</option><option>16</option><option>20</option></select>
           </label>
           <div class="toggles">
-            <label class="toggle"><input type="checkbox" id="voiceOn" checked> صوت يحكي التعليمات</label>
+            <label class="toggle"><input type="checkbox" id="voiceOn"> صوت يحكي التعليمات</label>
             <label class="toggle"><input type="checkbox" id="sfxOn" checked> مؤثرات</label>
-            <label class="toggle"><input type="checkbox" id="monsterOn" checked> مفاجأة «الوحش صحي!»</label>
+            <label class="toggle"><input type="checkbox" id="monsterOn"> مفاجأة «الوحش صحي!»</label>
           </div>
           <label class="file">🎶 غيّر أغنية اللوبي<input type="file" id="lobbyFile" accept="audio/*"></label>
           <label class="file">🎵 غيّر أغنية اللعبة<input type="file" id="songFile" accept="audio/*"></label>
@@ -322,14 +342,12 @@ const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&
 const DUELS = [
   {id:'jump',   mode:'seqTimer', secs:10, i:'🐸', t:'مين بينطّ أكتر؟', go:'نُطّ نُطّ نُطّ!',
    how:['كل واحد بدوره، إله ١٠ ثواني','نُطّ بمكانك أكتر ما فيك','الجمهور بيعدّ النطّات بصوت عالي']},
-  {id:'clap',   mode:'seqTimer', secs:10, i:'👏', t:'مين بيصفّق أكتر؟', go:'صفّق صفّق!',
-   how:['كل واحد بدوره، إله ١٠ ثواني','صفّق بإيديك أسرع ما فيك','الجمهور بيعدّ التصفيقات']},
+  {id:'clap',   mode:'freeze', i:'👏', t:'صفّق مع الأغنية!', on:{i:'👏',t:'صفّقوا مع الأغنية!'}, off:{i:'🤫',t:'ولا تصفيقة!'}, judge:'مين ما صفّق بعد ما وقفت؟',
+   how:['لما تشتغل الأغنية: صفّقوا معها','فجأة بتوقف… وقّفوا تصفيق!','اللي بيصفّق بعد ما توقف بيخسر']},
   {id:'squat',  mode:'seqTimer', secs:10, i:'🏋️', t:'مين بيقعد ويقوم أكتر؟', go:'اقعد وقوم!',
    how:['كل واحد بدوره، إله ١٠ ثواني','انزل لتحت كأنك قاعد، وارجع وقّف','الجمهور بيعدّ كل مرة']},
   {id:'rhythm', mode:'rhythm', i:'🥁', t:'مين بيقلّد الإيقاع صح؟',
    how:['الشاشة بتعرض إيقاع: 👏 صفقة، 🦶 دبكة، 🙌 إيدين لفوق','كل واحد بدوره بيعيده بنفس الترتيب','اللي بيعيده صح بيربح']},
-  {id:'robot',  mode:'togetherTimer', secs:10, i:'🤖', t:'مين أحلى روبوت؟', go:'بيب بوب!',
-   how:['الاتنين مع بعض','امشوا بحركات ناشفة ومقطّعة','واحكوا بصوت روبوت: أنا روبوت، بيب بوب']},
   {id:'face',   mode:'togetherTimer', secs:8,  i:'🤪', t:'مين بيعمل أضحك وجه؟', go:'أضحك وجه!',
    how:['الاتنين مع بعض','طلّعوا لسانكم، كبّروا عيونكم، اعملوا أضحك وجه','الجمهور بيصفّق للأضحك']},
   {id:'monster',mode:'togetherTimer', secs:8,  i:'👹', t:'مين أخوف وحش؟', go:'وحوش!',
@@ -342,8 +360,6 @@ const DUELS = [
    how:['الاتنين بيرفعوا رجل وحدة عن الأرض','ممنوع تنزّلوها أو تمسكوا بشي','آخر واحد بيضل واقف بيربح']},
   {id:'serious',mode:'togetherWatch', i:'😐', t:'مين ما بيضحك؟', go:'ولا ضحكة!', stop:'🏁 حدا ضحك',
    how:['الاتنين بيطّلعوا بعيون بعض','الجمهور بيعمل أصوات مضحكة ليضحّككم','أول واحد بيضحك بيخسر']},
-  {id:'turtle', mode:'togetherWatch', i:'🐢', t:'مين أبطأ سلحفاة؟', go:'شوي شوي…', stop:'🏁 حدا وصل',
-   how:['الاتنين بيوقفوا عند الحيط','بيمشوا لعند الشاشة بأبطأ ما فيهم، ممنوع يوقفوا','اللي بيوصل آخر واحد بيربح']},
   {id:'voice',  mode:'seqWatch', i:'🗣️', t:'مين بيطوّل «آآآآ» أكتر؟', go:'آآآآآآ!',
    how:['كل واحد بدوره','خذ نفس كبير وقول «آآآآ» بدون ما توقف','الساعة بتقيس، والأطول بيربح']},
   {id:'touch',  mode:'touch', i:'👆', t:'إلمس!',
@@ -354,29 +370,33 @@ const DUELS = [
    how:['حطّوا مخدة على راسكم','امشوا لعند الحيط وارجعوا بدون ما توقع','إذا وقعت: ارجع للبداية. أول واحد بيرجع بيربح']},
   {id:'memory', mode:'memory', i:'👀', t:'شو تغيّر؟',
    how:['طّلعوا منيح عالحيوانات عالشاشة','غمّضوا… وواحد منهم رح يختفي!','أول واحد بيصرّخ مين اختفى بياخد نقطة']},
-  {id:'frog',   mode:'seqFree', i:'🐸', t:'مين بينطّ أبعد نطّة؟', go:'نطّة وحدة لقدّام!',
-   how:['كل واحد بدوره بينطّ نطّة وحدة لقدّام','حطّوا مخدة أو جرابة مكان ما وصل','الأبعد بيربح']}
+  {id:'colors', mode:'colors', i:'🎨', t:'الألوان!',
+   how:['بيطلع لون واحد كبير عالشاشة','ركضوا ولمسوا شي بالغرفة بنفس اللون','أول واحد بيلمسه بيربح']},
+  {id:'wolf',   mode:'wolf', i:'🐺', t:'الذيب جاي!',
+   how:['الاتنين بيوقفوا عند الحيط، والذيب عند الشاشة','الأغنية شغّالة: امشوا شوي شوي لعند الشاشة','الأغنية بتوقف والذيب بيطّلع: وقّفوا! اللي بيتحرك بيرجع للحيط','أول واحد بيلمس الشاشة بيربح']},
+  {id:'blink',  mode:'togetherWatch', i:'👁️', t:'ما ترمش!', go:'ولا رمشة!', stop:'🏁 حدا رمش', judge:'مين ما رمش؟',
+   how:['الاتنين بيطّلعوا بعيون بعض','ممنوع ترمشوا، والجمهور بيراقب','أول واحد بيرمش بيخسر']},
+  {id:'turn',   mode:'turn', i:'🐓', t:'التفت عالصوت!',
+   how:['الاتنين بيعطوا ضهرهم للشاشة','الشاشة رح تعمل أصوات حيوانات','التفتوا بس على الصوت الصح! اللي بيلتفت غلط بيخسر النقطة']},
 ];
 const TEAM_TASKS = [
-  {kind:'fast', i:'🚂', t:'مين بيعمل قطار أسرع؟', do:'امسكوا بكتاف بعض ورا بعض وصرّخوا تشو تشو'},
-  {kind:'fast', i:'⭕', t:'مين بيعمل دائرة أسرع؟', do:'امسكوا إيدين بعض واعملوا دائرة'},
-  {kind:'fast', i:'🛌', t:'مين بينبطح أسرع؟', do:'كل الفريق بينام عالأرض على بطنه'},
-  {kind:'fast', i:'🪑', t:'مين بيقعد أسرع؟', do:'كل الفريق بيقعد عالأرض'},
-  {kind:'fast', i:'🙌', t:'مين بيرفع إيديه أسرع؟', do:'حطّوا إيديكم فوق بعض بالنص، وارفعوها مع بعض وصرّخوا يلااا'},
-  {kind:'fast', i:'🤗', t:'مين بيعمل حضن جماعي أسرع؟', do:'كل الفريق بيحضن بعض مع بعض'},
-  {kind:'relay', i:'🏃', t:'سباق التتابع!', do:'كل واحد بدوره بينطّ ٥ نطّات وبيضرب كفّ للي بعده'},
+  {kind:'fast', i:'🚂', t:'اعملوا قطار!', do:'امسكوا بكتاف بعض ورا بعض وصرّخوا تشو تشو'},
+  {kind:'fast', i:'⭕', t:'اعملوا دائرة!', do:'امسكوا إيدين بعض واعملوا دائرة'},
+  {kind:'fast', i:'🛌', t:'انبطحوا!', do:'كل الفريق بينام عالأرض على بطنه'},
+  {kind:'fast', i:'🪑', t:'اقعدوا!', do:'كل الفريق بيقعد عالأرض'},
+  {kind:'fast', i:'🙌', t:'إيديكم لفوق!', do:'حطّوا إيديكم فوق بعض بالنص، وارفعوها مع بعض وصرّخوا يلااا'},
+  {kind:'fast', i:'🤗', t:'حضن جماعي!', do:'كل الفريق بيحضن بعض مع بعض'},
   {kind:'relay', i:'🏃', t:'سباق التتابع!', do:'كل واحد بدوره بيركض لعند الحيط ورجاع وبيضرب كفّ للي بعده'},
-  {kind:'loud', i:'🦁', t:'مين أعلى زئير؟', do:'كل الفريق بيصرّخ زي الأسد: رااااه'},
-  {kind:'loud', i:'📣', t:'مين أعلى هتاف؟', do:'صرّخوا اسم فريقكم: أحمر أحمر، أزرق أزرق'},
-  {kind:'loud', i:'👏', t:'مين أقوى تصفيق؟', do:'صفّقوا ودبّكوا برجليكم أقوى ما فيكم'},
-  {kind:'best', i:'🗿', t:'مين أحلى تمثال جماعي؟', do:'وقّفوا قريبين من بعض واعملوا شكل حلو، وما حدا يتحرك'},
-  {kind:'best', i:'💃', t:'مين أحلى رقصة؟', do:'ارقصوا كلكم نفس الحركة مع بعض'}
+  {kind:'relay', i:'🦀', t:'تتابع السلطعون!', do:'كل واحد بدوره بيمشي عالجنب لعند الحيط ورجاع وبيضرب كفّ للي بعده'},
+  {kind:'taskrelay', i:'🔁', t:'تتابع المهمات!', do:'كل لاعب إله مهمة: بيعملها وبيضرب كفّ للي بعده'},
+  {kind:'taskrelay', i:'🔁', t:'تتابع المهمات!', do:'كل لاعب إله مهمة: بيعملها وبيضرب كفّ للي بعده'}
 ];
-const TEAM_RULE = {relay:'لما كل الفريق يخلّص… أول فريق بيربح!', fast:'أول فريق بيخلّص بيربح', loud:'أعلى فريق بيربح', best:'أحلى فريق بيربح'};
-const ADULT_DUELS = ['carry','touch','robot','face','monster','dizzy','flam','serious'];
+const TEAM_RULE = {relay:'لما كل الفريق يخلّص… أول فريق بيربح!', taskrelay:'لما كل الفريق يخلّص… أول فريق بيربح!', fast:'أول فريق بيخلّص بيربح'};
+const RELAY_TASKS = [{e:'🐸',n:'نطّات',b:5},{e:'👏',n:'تصفيقات',b:6},{e:'🏋️',n:'قعدات',b:4},{e:'🌀',n:'لفّات',b:3},{e:'🦶',n:'دبكات',b:6}];
+const ADULT_DUELS = ['carry','touch','blink','turn','face','monster','dizzy','flam','serious'];
 const RHYTHM = [{e:'👏',f:900},{e:'🦶',f:150},{e:'🙌',f:600}];
 const TITLES = ['⭐ نجم اللعبة','⚡ الصاروخ','💪 البطل القوي','😂 ملك الضحك','💃 أحلى رقّاص','🦁 الأسد الشجاع','🌈 قلب الفريق','🎉 نجم الحفلة'];
-const DUEL_TITLE = {touch:'👆 أسرع إيد',updown:'🚀 ملك النطّ والقعدة',carry:'🎒 ملك التوازن',memory:'👀 عيون الصقر',robot:'🤖 أحلى روبوت',monster:'👹 أخوف وحش',face:'🤪 أضحك وجه',turtle:'🐢 أبطأ سلحفاة',freeze:'🗿 أحلى تمثال',rhythm:'🥁 ملك الإيقاع',jump:'🐸 ملك النطّ',frog:'🐸 أبعد نطّة',voice:'🗣️ أطول صوت',flam:'🦩 ملك التوازن',serious:'😐 أجدّ واحد',dizzy:'😵 ما بيدوخ',clap:'👏 ملك التصفيق',squat:'💪 البطل القوي'};
+const DUEL_TITLE = {touch:'👆 أسرع إيد',updown:'🚀 ملك النطّ والقعدة',carry:'🎒 ملك التوازن',memory:'👀 عيون الصقر',colors:'🎨 ملك الألوان',wolf:'🐺 أشجع من الذيب',blink:'👁️ عيون الحديد',turn:'🐓 أسرع أذن',monster:'👹 أخوف وحش',face:'🤪 أضحك وجه',freeze:'🗿 أحلى تمثال',rhythm:'🥁 ملك الإيقاع',jump:'🐸 ملك النطّ',frog:'🐸 أبعد نطّة',voice:'🗣️ أطول صوت',flam:'🦩 ملك التوازن',serious:'😐 أجدّ واحد',dizzy:'😵 ما بيدوخ',clap:'👏 ملك التصفيق',squat:'💪 البطل القوي'};
 
 /* ---------- State ---------- */
 let kids=[], adults=[], G=null, run=0;
@@ -384,24 +404,31 @@ let voiceOn=true, sfxOn=true, monsterOn=true, muted=false;
 let songURL=null;
 const music=new Audio('song.mp3'); music.loop=true; music.preload='auto';
 let musicOK=true; music.addEventListener('error',()=>{ musicOK=false; });
-const LV={high:1, low:.6, dance:1};
+const LV={high:1, low:.7, dance:1, quiet:.35, turn:.2};
+/* Volume goes through Web Audio gain where possible: iPhones and iPads ignore audio.volume, so fades and lowering never happened there. */
+function gainOf(el){ if(el._g!==undefined) return el._g; const c=ctx(); if(!c) return null;
+  try{ const src=c.createMediaElementSource(el); const g=c.createGain(); src.connect(g).connect(c.destination); el._g=g; el.volume=1; }catch(e){ el._g=null; }
+  return el._g; }
+function setV(el,v){ v=Math.max(0,Math.min(1,v)); const g=gainOf(el); if(g) g.gain.value=v; else el.volume=v; }
+function getV(el){ const g=el._g; return g? g.gain.value : el.volume; }
 let mLevel='off', speaking=false, fadeIv=null;
 function targetVol(){ if(muted||mLevel==='off') return 0; return speaking? LV[mLevel]*.7 : LV[mLevel]; }
-function applyVol(fast){ clearInterval(fadeIv); const t=targetVol(); if(fast){ music.volume=t; return; }
-  fadeIv=setInterval(()=>{ const d=t-music.volume; if(Math.abs(d)<.04){ music.volume=t; clearInterval(fadeIv); } else music.volume=Math.max(0,Math.min(1,music.volume+Math.sign(d)*.04)); },40); }
+function applyVol(fast){ clearInterval(fadeIv); const t=targetVol(); if(fast){ setV(music,t); return; }
+  fadeIv=setInterval(()=>{ const v=getV(music), d=t-v; if(Math.abs(d)<.04){ setV(music,t); clearInterval(fadeIv); } else setV(music,v+Math.sign(d)*.04); },40); }
 function setMusic(l,fast){ mLevel=l; if(!musicOK) return;
   if(l==='off'){ applyVol(true); music.pause(); return; }
-  if(music.paused&&!muted){ if(fast) music.volume=targetVol(); music.play().catch(()=>{}); }
+  if(music.paused&&!muted){ if(fast) setV(music,targetVol()); music.play().catch(()=>{}); }
   applyVol(fast); }
 /* Lobby song: setup + how-to-play screens. Browsers allow sound only after a tap, so it starts on the first tap. */
 let lobbyURL=null;
 const lobby=new Audio('lobby.mp3'); lobby.loop=true; lobby.preload='auto';
-let lobbyOn=false, lobbyFade=null;
-function lobbyStart(){ if(lobbyOn) return; lobbyOn=true; clearInterval(lobbyFade); if(muted) return;
-  lobby.volume=0; lobby.play().catch(()=>{ lobbyOn=false; });
-  lobbyFade=setInterval(()=>{ lobby.volume=Math.min(.75,lobby.volume+.05); if(lobby.volume>=.75) clearInterval(lobbyFade); },60); }
-function lobbyStop(){ lobbyOn=false; clearInterval(lobbyFade);
-  lobbyFade=setInterval(()=>{ lobby.volume=Math.max(0,lobby.volume-.06); if(lobby.volume<=0){ clearInterval(lobbyFade); lobby.pause(); } },50); }
+let lobbyOn=false, lobbyFade=null, lobbyKill=null;
+function lobbyStart(){ if(lobbyOn) return; lobbyOn=true; clearInterval(lobbyFade); clearTimeout(lobbyKill); if(muted) return;
+  setV(lobby,0); lobby.play().catch(()=>{ lobbyOn=false; });
+  lobbyFade=setInterval(()=>{ const v=getV(lobby)+.05; setV(lobby,Math.min(.75,v)); if(v>=.75) clearInterval(lobbyFade); },60); }
+function lobbyStop(){ lobbyOn=false; clearInterval(lobbyFade); clearTimeout(lobbyKill);
+  lobbyFade=setInterval(()=>{ const v=getV(lobby)-.06; setV(lobby,v); if(v<=0){ clearInterval(lobbyFade); lobby.pause(); } },50);
+  lobbyKill=setTimeout(()=>{ if(!lobbyOn){ clearInterval(lobbyFade); lobby.pause(); } },1000); }  // hard stop, whatever the device does with volume
 document.addEventListener('pointerdown',()=>{ if(!$('#setup').hidden) lobbyStart(); });
 document.addEventListener('keydown',()=>{ if(!$('#setup').hidden) lobbyStart(); });
 const av=p=>p.photo?`<img class="ph" src="${p.photo}" alt="">`:p.emoji;
@@ -411,7 +438,7 @@ const alive = id => { if(id!==run) throw new Quit(); };
 /* ---------- Storage ---------- */
 function load(){
   try{ const s=JSON.parse(localStorage.getItem('ynt2')||'null'); if(s&&Array.isArray(s.kids)) return s; }catch(e){}
-  return {kids:[{name:'سارة',emoji:'🦁'},{name:'عمر',emoji:'🐰'},{name:'ليلى',emoji:'🐸'},{name:'آدم',emoji:'🐻'}], adults:[{name:'بابا',emoji:'🧔'},{name:'ماما',emoji:'👩'}]};
+  return {kids:[{name:'سارة',emoji:'🦁'},{name:'عمر',emoji:'🐰'},{name:'ليلى',emoji:'🐸'},{name:'آدم',emoji:'🐻'}], adults:[]};
 }
 function save(){ const d={kids:kids.map(k=>({name:k.name,emoji:k.emoji,photo:k.photo||null})), adults:adults.map(k=>({name:k.name,emoji:k.emoji}))};
   try{ localStorage.setItem('ynt2', JSON.stringify(d)); }catch(e){ try{ d.kids.forEach(k=>k.photo=null); localStorage.setItem('ynt2', JSON.stringify(d)); }catch(e2){} } }
@@ -593,7 +620,9 @@ function pickSide(id, {label='مين ربح؟', note='اكبسوا على الف
 
 /* ---------- Timers ---------- */
 function timerHTML(secs){ return `<div class="timer" id="timer"><svg viewBox="0 0 120 120"><circle class="track" cx="60" cy="60" r="52" fill="none" stroke-width="12"/><circle class="bar" id="tbar" cx="60" cy="60" r="52" fill="none" stroke-width="12" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="0"/></svg><span id="tnum">${toAr(secs)}</span></div>`; }
+let timerGen=0; function stopTimers(){ timerGen++; }
 function countdownTimer(secs, id, {monster=false, doneBtn=null}={}){
+  const gen=timerGen;
   return new Promise((res,rej)=>{
     const C=326.7; let left=secs*1000, last=performance.now(), lastSec=secs, paused=false, finished=false;
     const monAt = monster ? secs*1000*(.35+Math.random()*.3) : -1; let monDone=false;
@@ -602,6 +631,7 @@ function countdownTimer(secs, id, {monster=false, doneBtn=null}={}){
     if(doneBtn&&$('#ctrl')){ $('#ctrl').innerHTML=`<button class="btn dark small" id="earlyBtn">${doneBtn}</button>`; $('#earlyBtn').onclick=()=>finish('early'); }
     const iv=setInterval(async ()=>{
       if(id!==run){ clearInterval(iv); Beat.stop(); rej(new Quit()); return; }
+      if(gen!==timerGen){ finished=true; clearInterval(iv); res('stopped'); return; }
       const now=performance.now(), dt=now-last; last=now; if(paused) return;
       left-=dt;
       if(monAt>0&&!monDone&&secs*1000-left>=monAt){ monDone=true; paused=true; Beat.stop();
@@ -623,7 +653,7 @@ function stopwatch(id, el){
 }
 async function monsterEvent(id){
   const sc=$('#screen'); const ov=document.createElement('div'); ov.className='overlay monster';
-  ov.innerHTML='<div class="em">👹</div><b>الوحش صحي!<br>وقّفوا مكانكم!</b>'; sc.append(ov); sc.classList.add('shake'); setMusic('off',true); SFX.roar();
+  ov.innerHTML='<div class="em">👹</div><b>الوحش صحي!<br>وقّفوا مكانكم!</b>'; sc.append(ov); sc.classList.add('shake'); setMusic('quiet',true); SFX.roar();
   speak('الوحش صحي! وقّفوا مكانكم!'); await sleep(3200); alive(id);
   ov.innerHTML='<div class="em">😴</div><b>رجع نام… كمّلوا!</b>'; ov.style.background='var(--leaf)'; sc.classList.remove('shake');
   speak('رجع نام! كمّلوا!'); await sleep(1300); alive(id); ov.remove(); setMusic('low');
@@ -645,8 +675,8 @@ function pickPair(){
   return Math.random()<.5?[a,b]:[b,a];
 }
 function pickDuel(){ if(!G.duelPool.length) G.duelPool=shuffle(DUELS); let d=G.duelPool.pop(); if(d.id===G.lastDuel&&G.duelPool.length){ const n=G.duelPool.pop(); G.duelPool.unshift(d); d=n; } G.lastDuel=d.id; return d; }
+function pickTeamTaskOf(kind){ const l=TEAM_TASKS.filter(t=>t.kind===kind); return rnd(l); }
 function pickTeamTask(){ if(!G.teamPool.length) G.teamPool=shuffle(TEAM_TASKS); return G.teamPool.pop(); }
-function fadeOut(a){ if(a.paused) return; const iv=setInterval(()=>{ a.volume=Math.max(0,a.volume-.08); if(a.volume<=0){ clearInterval(iv); a.pause(); a.volume=1; } },80); }
 function setRound(t){ $('#roundLbl').textContent=t; }
 
 async function startGame(){
@@ -676,10 +706,9 @@ async function intro(id){
       <li style="animation-delay:.9s"><b>٣</b>الفائز ⭐⭐ والتاني ⭐ نجمة الشجاعة</li>
       <li style="animation-delay:1.3s"><b>٤</b>وأحياناً… فريق ضد فريق!</li>
     </ol><div class="controls" id="ctrl"></div></div>`);
-  setMusic('off',true); lobbyStart();
+  lobbyStop(); music.currentTime=0; setMusic('high',true);
   speak('كيف بنلعب؟ كل جولة اتنين بيتبارزوا، والباقي جمهور بيعدّوا وبيشجّعوا. الفائز بياخد نجمتين، والتاني نجمة الشجاعة.');
   await choose([{k:'go',cls:'go big ready',html:'✋ مستعدين!'}], id);
-  lobbyStop(); music.currentTime=0; setMusic('high',true);
 }
 
 async function loop(id){
@@ -803,16 +832,17 @@ async function playDuel(D,A,B,id){
       const stop=stopwatch(id,'#watch');
       try{ await choose([{k:'s',cls:'pink',html:D.stop}], id); } finally { stop(); }
       SFX.buzz();
-      return pickSide(id, D.id==='turtle'?{label:'مين أبطأ؟',note:'الأبطأ هو الربحان! اكبسوا عليه'}:{label:D.judge||'مين ربح؟'});
+      return pickSide(id,{label:D.judge||'مين ربح؟'});
     }
     case 'freeze': {
       arena(A,B,'');
       for(let r=1;r<=4;r++){
         sides({a:'on',b:'on'}); setMid(`<div class="icon">${D.on.i}</div><div class="say">${D.on.t}</div>`);
         if(musicOK) setMusic('dance',true); else { Beat.start(); Beat.fast(r>2); } if(r===1) speak(D.on.t);
-        await sleep(3500+Math.random()*4000); alive(id); if(musicOK) setMusic('off',true); else Beat.stop();
+        await sleep(stopDelay()); alive(id); if(musicOK) setMusic('off',true); else Beat.stop();
         sides({}); setMid(`<div class="icon">${D.off.i}</div><div class="say" style="color:var(--pink)">${D.off.t}</div>`);
         SFX.buzz(); speak(D.off.t); await sleep(D.id==='updown'?1800:2600); alive(id);
+        if(musicOK) setMusic('low');
         const k=await pickSide(id,{label:D.judge,note:'اكبسوا على الفائز',again:r<4});
         if(k!=='again'){ setMusic('low'); return k; }
       }
@@ -827,6 +857,75 @@ async function playDuel(D,A,B,id){
         setMid(`<div class="icon pulse" style="font-size:clamp(90px,18vh,190px)">${pt.e}</div><div class="say">إلمس ${pt.t}!</div>`);
         SFX.go(); speak('إلمس '+pt.t);
       }, 'مين لمس أول؟');
+    }
+    case 'colors': {
+      arena(A,B,''); sides({a:'on',b:'on'});
+      const cs=shuffle(COLOR_LIST).slice(0,1);
+      return quickfire(A,B,id,cs.length, async r=>{
+        const c=cs[r];
+        setMid(`<div class="say">جاهزين…</div>`); await sleep(1200); alive(id);
+        setMid(`<div class="pulse" style="width:clamp(110px,22vh,220px);aspect-ratio:1;border-radius:50%;background:${c.c};box-shadow:0 0 0 8px rgba(255,255,255,.85)"></div><div class="say">إلمس شي ${c.n}!</div>`);
+        SFX.go(); speak('إلمس شي '+c.n);
+      }, 'مين لمس أول؟');
+    }
+    case 'wolf': {
+      arena(A,B,''); const a=$('.side.a'), b=$('.side.b'); let won=null;
+      [a,b].forEach(x=>{ x.classList.add('pick'); x.tabIndex=0; });
+      a.onclick=()=>{ won='a'; }; b.onclick=()=>{ won='b'; };
+      const wolfTie=`<div class="controls"><button class="tie" id="wolfTie">🤝 وصلوا مع بعض</button></div>`;
+      const tieOn=()=>{ const t=$('#wolfTie'); if(t) t.onclick=()=>{ won='tie'; }; };
+      try{
+        for(let r=0;r<14&&!won;r++){
+          setMid(`<div class="icon">🐺💤</div><div class="say">امشوا شوي شوي…</div><div class="note">اللي بيلمس الشاشة: اكبسوا عليه</div>${wolfTie}`); tieOn();
+          if(musicOK) setMusic('dance',true); else Beat.start(); if(r===0) speak('امشوا شوي شوي');
+          await waitOr(()=>won, stopDelay(), id); if(won) break;
+          if(musicOK) setMusic('off',true); else Beat.stop();
+          setMid(`<div class="icon pulse">🐺👀</div><div class="say" style="color:var(--pink)">الذيب بيطّلع! وقّفوا!</div><div class="note">اللي تحرّك… يرجع للحيط!</div>${wolfTie}`); tieOn();
+          SFX.roar(); speak('الذيب بيطّلع! وقّفوا!');
+          await waitOr(()=>won, 3000, id);
+        }
+      } finally { [a,b].forEach(x=>{ x.classList.remove('pick'); x.onclick=null; x.tabIndex=-1; }); Beat.stop(); }
+      setMusic('low');
+      return won || pickSide(id,{label:'مين أقرب للشاشة؟'});
+    }
+    case 'turn': {
+      // One try: first to turn on the right sound wins. Turning on a wrong sound loses. Nobody turned: same try again.
+      arena(A,B,''); sides({a:'on',b:'on'}); setMusic('turn');
+      const sa=$('.side.a'), sb=$('.side.b');
+      const tapSide=(withBtns)=>new Promise((res,rej)=>{
+        [sa,sb].forEach(x=>{ x.classList.add('pick'); x.tabIndex=0; });
+        sa.onclick=()=>res('a'); sb.onclick=()=>res('b');
+        if(withBtns){ const t=$('#turnTie'); if(t) t.onclick=()=>res('tie'); const rr=$('#turnRetry'); if(rr) rr.onclick=()=>res('retry'); }
+        const iv=setInterval(()=>{ if(id!==run){ clearInterval(iv); rej(new Quit()); } else if(!document.body.contains(sa)) clearInterval(iv); },200);
+      });
+      const unpick=()=>[sa,sb].forEach(x=>{ x.classList.remove('pick'); x.onclick=null; x.tabIndex=-1; });
+      const target=rnd(FARM);
+      setMid(`<div class="icon pulse" id="tgtIcon">${target.e}</div><div class="say">التفتوا بس على صوت ${target.n}!</div><div class="note">اسمعوه منيح قبل ما نبلّش</div><div class="controls" id="ctrl"></div>`);
+      await speak(`التفتوا بس على صوت ${target.n}. اسمعوه منيح`); await sleep(300); farmSound(target); alive(id);
+      while(true){
+        const k=await choose([{k:'hear',cls:'pink',html:`🔊 اسمعوا ${target.e} كمان`},{k:'go',cls:'go',html:'✋ جاهزين'}], id);
+        if(k==='go') break;
+        const ic=$('#tgtIcon'); if(ic){ ic.classList.remove('pulse'); void ic.offsetWidth; ic.classList.add('pulse'); }
+        farmSound(target);
+      }
+      while(true){
+        setMid(`<div class="icon">🙈</div><div class="say">ضهركم للشاشة!</div>`); speak('ضهركم للشاشة!'); await sleep(2200); alive(id);
+        const decoys=shuffle(FARM.filter(f=>f!==target)), nDecoy=1+Math.floor(Math.random()*4); let wrong=null;
+        for(let d=0; d<nDecoy && !wrong; d++){
+          const f=decoys[d%decoys.length];
+          setMid(`<div class="icon">${f.e}</div><div class="say">«${f.s}»</div><div class="note">حدا التفت غلط؟ اكبسوا عليه</div>`);
+          farmSound(f);
+          wrong=await Promise.race([tapSide(false), sleep(1800+Math.random()*1600).then(()=>null)]); unpick(); alive(id);
+        }
+        if(wrong){ const other=wrong==='a'?'b':'a'; SFX.buzz();
+          setMid(`<div class="icon">😅</div><div class="say">${esc((wrong==='a'?A:B).name)} التفت غلط!</div>`); speak('التفت غلط!'); await sleep(1800); alive(id);
+          setMusic('low'); return other; }
+        setMid(`<div class="icon pulse" style="font-size:clamp(90px,18vh,180px)">${target.e}</div><div class="say">«${target.s}»</div><div class="note">مين التفت أول؟</div><div class="controls"><button class="tie" id="turnTie">🤝 مع بعض</button><button class="tie" id="turnRetry">🔁 ما حدا التفت… من جديد</button></div>`);
+        farmSound(target);
+        const k=await tapSide(true); unpick(); alive(id);
+        if(k==='retry'){ speak('من جديد!'); await sleep(700); alive(id); continue; }
+        setMusic('low'); return k;
+      }
     }
     case 'memory': {
       arena(A,B,''); sides({a:'on',b:'on'});
@@ -844,10 +943,10 @@ async function playDuel(D,A,B,id){
       while(true){
         const pat=Array.from({length:len},()=>rnd(RHYTHM));
         sides({}); setMid(`<div class="say">اسمعوا وطّلعوا!</div><div class="beats">${pat.map((p,i)=>`<div class="beat" id="bt${i}">${p.e}</div>`).join('')}</div><div class="note">👏 صفقة · 🦶 دبكة · 🙌 إيدين لفوق</div><div class="controls" id="ctrl"></div>`);
-        setMusic('off',true); await sleep(600); alive(id);
+        setMusic('low'); await sleep(600); alive(id);
         for(let rep=0;rep<2;rep++){ for(let i=0;i<pat.length;i++){ const el=$('#bt'+i); el&&el.classList.add('on'); tone(pat[i].f,.18,pat[i].f<200?'sine':'triangle',.3); await sleep(520); alive(id); el&&el.classList.remove('on'); } await sleep(500); alive(id); }
         for(const [p,s] of [[A,'a'],[B,'b']]){
-          setMusic('off',true); sides(s==='a'?{a:'on',b:'dim'}:{a:'dim',b:'on'}); $('#mid .say').textContent=`دور ${p.name}: عيدها!`; speak('دور '+p.name);
+          setMusic('low'); sides(s==='a'?{a:'on',b:'dim'}:{a:'dim',b:'on'}); $('#mid .say').textContent=`دور ${p.name}: عيدها!`; speak('دور '+p.name);
           await choose([{k:'ok',cls:'go',html:'✓ خلص'}], id);
         }
         sides({}); setMusic('low');
@@ -879,6 +978,40 @@ async function quickfire(A,B,id,rounds,showRound,label){
   }
   return sc.a===sc.b?'tie':(sc.a>sc.b?'a':'b');
 }
+// When the song stops: sometimes very fast, usually medium, sometimes long, so nobody can guess it.
+function stopDelay(){ const r=Math.random(); if(r<.3) return 1000+Math.random()*1500; if(r<.8) return 2800+Math.random()*3200; return 6500+Math.random()*3500; }
+async function waitOr(cond,ms,id){ const end=performance.now()+ms; while(performance.now()<end){ if(cond()) return; await sleep(100); alive(id); } }
+const COLOR_LIST=[{c:'#E53935',n:'أحمر'},{c:'#FDD835',n:'أصفر'},{c:'#1E88E5',n:'أزرق'},{c:'#43A047',n:'أخضر'},{c:'#FFFFFF',n:'أبيض'},{c:'#212121',n:'أسود'},{c:'#FB8C00',n:'برتقالي'},{c:'#EC407A',n:'زهري'}];
+const FARM=[{k:'rooster',e:'🐓',n:'الديك',s:'كوكوكوكووو',f:[900,1300,1600,1100]},{k:'dog',e:'🐶',n:'الكلب',s:'هو هو هو',f:[380,380,380]},{k:'cat',e:'🐱',n:'القطة',s:'مياااو',f:[700,950]},
+  {k:'frog',e:'🐸',n:'الضفدع',s:'قرقر قرقر',f:[160,140,160,140]},{k:'cow',e:'🐮',n:'البقرة',s:'موووو',f:[180]},{k:'sheep',e:'🐑',n:'الخروف',s:'ماااع',f:[520,480,520]},{k:'duck',e:'🦆',n:'البطة',s:'كاك كاك',f:[620,620]}];
+/* Synthesized animal sounds: shaped oscillators + noise through vowel-like filters. */
+let noiseBuf=null;
+function noise(c){ if(noiseBuf) return noiseBuf; noiseBuf=c.createBuffer(1,c.sampleRate,c.sampleRate); const d=noiseBuf.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1; return noiseBuf; }
+function voice(c,t,{type='sawtooth',f=[],bp=null,q=4,lp=null,vib=0,vibRate=6,dur=.3,vol=.35,att=.02,rel=.08}){
+  const o=c.createOscillator(); o.type=type; const g=c.createGain(); let node=o;
+  f.forEach(([tt,fr],i)=>{ if(i===0) o.frequency.setValueAtTime(fr,t+tt); else o.frequency.linearRampToValueAtTime(fr,t+tt); });
+  if(vib){ const l=c.createOscillator(), lg=c.createGain(); l.frequency.value=vibRate; lg.gain.value=vib; l.connect(lg).connect(o.frequency); l.start(t); l.stop(t+dur+.1); }
+  const chain=[];
+  if(bp){ const fl=c.createBiquadFilter(); fl.type='bandpass'; fl.Q.value=q; bp.forEach(([tt,fr],i)=>{ if(i===0) fl.frequency.setValueAtTime(fr,t+tt); else fl.frequency.linearRampToValueAtTime(fr,t+tt); }); chain.push(fl); }
+  if(lp){ const fl=c.createBiquadFilter(); fl.type='lowpass'; lp.forEach(([tt,fr],i)=>{ if(i===0) fl.frequency.setValueAtTime(fr,t+tt); else fl.frequency.linearRampToValueAtTime(fr,t+tt); }); chain.push(fl); }
+  chain.forEach(fl=>{ node.connect(fl); node=fl; });
+  node.connect(g).connect(c.destination);
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+att); g.gain.setValueAtTime(vol,t+Math.max(att,dur-rel)); g.gain.linearRampToValueAtTime(0,t+dur);
+  o.start(t); o.stop(t+dur+.05);
+}
+function burst(c,t,{bp=800,q=1,dur=.06,vol=.4}){ const n=c.createBufferSource(); n.buffer=noise(c); const fl=c.createBiquadFilter(); fl.type='bandpass'; fl.frequency.value=bp; fl.Q.value=q; const g=c.createGain();
+  g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.001,t+dur); n.connect(fl).connect(g).connect(c.destination); n.start(t); n.stop(t+dur+.02); }
+const ANIMAL_SFX={
+  dog(c,t){ for(const d of [0,.32]){ burst(c,t+d,{bp:900,q:.8,dur:.07,vol:.5}); voice(c,t+d,{f:[[0,320],[.05,420],[.16,180]],bp:[[0,900],[.16,500]],q:2,dur:.18,vol:.55,att:.005}); } },
+  cat(c,t){ voice(c,t,{f:[[0,520],[.25,820],[.75,480]],bp:[[0,1000],[.25,2200],[.75,900]],q:5,vib:12,vibRate:7,dur:.8,vol:.5,att:.06,rel:.2}); },
+  cow(c,t){ voice(c,t,{f:[[0,105],[.4,135],[1.3,95]],lp:[[0,350],[.4,1000],[1.3,300]],vib:3,vibRate:5,dur:1.4,vol:.65,att:.12,rel:.35}); },
+  rooster(c,t){ const n=[[0,.13,620,640],[.16,.13,880,900],[.32,.13,1040,1060],[.5,.7,1180,760]];
+    n.forEach(([d,du,f1,f2])=>voice(c,t+d,{f:[[0,f1],[du,f2]],bp:[[0,1600],[du,1300]],q:3,vib:d>=.5?18:0,vibRate:9,dur:du,vol:.42,att:.01,rel:.06})); },
+  duck(c,t){ for(const d of [0,.28]) voice(c,t+d,{f:[[0,280],[.15,230]],bp:[[0,1300],[.15,1100]],q:8,dur:.16,vol:.6,att:.005}); },
+  sheep(c,t){ voice(c,t,{f:[[0,430],[.8,390]],bp:[[0,1100],[.8,900]],q:4,vib:28,vibRate:8,dur:.85,vol:.5,att:.04,rel:.2}); },
+  frog(c,t){ for(const d of [0,.22]){ for(let k=0;k<5;k++) voice(c,t+d+k*.03,{type:'square',f:[[0,140],[.03,120]],lp:[[0,700]],dur:.025,vol:.45,att:.002,rel:.01}); } }
+};
+function farmSound(a){ if(!sfxOn||muted) return; const c=ctx(); if(!c) return; ANIMAL_SFX[a.k](c,c.currentTime+.02); }
 const BODY=[{e:'👃',t:'أنفك'},{e:'👂',t:'إذنك'},{e:'🦶',t:'رجلك'},{e:'🤚',t:'إيدك'},{e:'👄',t:'تمّك'},{e:'👀',t:'عيونك'},{e:'🦵',t:'ركبتك'},{e:'🫃',t:'بطنك'},{e:'💆',t:'راسك'},{e:'💪',t:'كتفك'}];
 const ANIMALS=['🐶','🐱','🐰','🦁','🐸','🐵','🐘','🦒','🐧','🐢','🐔','🐟','🦋','🐮'];
 
@@ -932,37 +1065,54 @@ async function teamRound(id,mult){
     SFX.drum(); await sleep(500); alive(id); }
   SFX.ting(); await sleep(1100); alive(id);
   R.members=red.map(P); Bl.members=blue.map(P);
-  const T=pickTeamTask();
-  await explain(R,Bl,{i:T.i,t:T.t,how:['🔴 الأحمر ضد 🔵 الأزرق',T.do,TEAM_RULE[T.kind]]},id,{mult});
-  setMusic('low'); arena(R,Bl,`<div class="icon">${T.i}</div><div class="say">${T.t}</div>`); sides({a:'on',b:'on'});
-  await count321(id);
-  let k;
-  if(T.kind==='relay'){
-    const need=Math.max(red.length,blue.length); const done={a:0,b:0};
-    const a=$('.side.a'), b=$('.side.b');
-    const mark=()=>{ for(const [el,key,team] of [[a,'a',red],[b,'b',blue]]){
-      el.querySelectorAll('.members span').forEach((m,j)=>{ m.style.opacity = j<Math.min(done[key],team.length)||done[key]>=need?'.45':'1'; m.style.textDecoration=j<done[key]?'line-through':'none'; });
-      let t=el.querySelector('.tally'); if(!t){ t=document.createElement('div'); t.className='tally'; el.append(t); }
-      t.textContent='✅'.repeat(done[key])+'⬜'.repeat(need-done[key]); } };
-    setMid(`<div class="icon">${T.i}</div><div class="say">يلا يلا!</div><div class="note">كل ما حدا يخلّص… اكبسوا على فريقه</div>${red.length!==blue.length?`<div class="note">الفريق الأصغر: أول واحد فيه بيرجع يلعب بالآخر</div>`:''}`);
-    Beat.start(); mark(); [a,b].forEach(s=>{ s.classList.add('pick'); s.tabIndex=0; });
-    k=await new Promise((res,rej)=>{
-      const tap=key=>{ if(done[key]>=need) return; done[key]++; SFX.ting(); mark(); if(done[key]>=need) res(key); };
-      a.onclick=()=>tap('a'); b.onclick=()=>tap('b');
-      const iv=setInterval(()=>{ if(id!==run){ clearInterval(iv); rej(new Quit()); } else if(!document.body.contains(a)) clearInterval(iv); },200); });
-    [a,b].forEach(s=>{ s.classList.remove('pick'); s.onclick=null; }); Beat.stop();
-  } else if(T.kind==='fast'){
-    setMid(`<div class="icon">${T.i}</div><div class="say">يلا يلا!</div>${timerHTML(15)}<div class="note">اكبسوا على أول فريق بيخلّص</div>`);
-    const tp=countdownTimer(15,id,{});
-    const a=$('.side.a'), b=$('.side.b'); [a,b].forEach(s=>{ s.classList.add('pick'); s.tabIndex=0; });
-    k=await Promise.race([tp.then(()=>null), new Promise(res=>{ a.onclick=()=>res('a'); b.onclick=()=>res('b'); })]);
-    [a,b].forEach(s=>{ s.classList.remove('pick'); s.onclick=null; });
-    if(!k) k=await pickSide(id,{label:'مين خلّص أول؟'}); else Beat.stop();
+  let T=pickTeamTask(); let k;
+  const a=()=>$('.side.a'), b=()=>$('.side.b');
+  if(T.kind==='fast'){
+    // The task stays secret until "يلا!", so nobody can start early.
+    await explain(R,Bl,{i:'🤫',t:'⚡ مين أسرع؟',how:['🔴 الأحمر ضد 🔵 الأزرق','المهمة سرّ! رح تطلع بعد «يلا»','أول فريق بيخلّص بيربح']},id,{mult});
+    while(true){
+      setMusic('low'); arena(R,Bl,`<div class="icon">🤫</div><div class="say">شو رح تكون المهمة؟</div>`); sides({a:'on',b:'on'});
+      await count321(id);
+      setMid(`<div class="icon pulse" style="font-size:clamp(90px,18vh,180px)">${T.i}</div><div class="say" style="font-size:clamp(34px,5vw,64px)">${T.t}</div><div class="note">${T.do}</div>${timerHTML(15)}<div class="note">اكبسوا على أول فريق بيخلّص</div><div class="controls"><button class="tie" id="falseStart">🔁 بدري! من جديد</button></div>`);
+      SFX.go(); speak(T.t);
+      const tp=countdownTimer(15,id,{});
+      [a(),b()].forEach(x=>{ x.classList.add('pick'); x.tabIndex=0; });
+      k=await Promise.race([tp.then(()=>null), new Promise(res=>{ a().onclick=()=>res('a'); b().onclick=()=>res('b'); $('#falseStart').onclick=()=>res('again'); })]);
+      [a(),b()].forEach(x=>{ x.classList.remove('pick'); x.onclick=null; });
+      if(k==='again'){ Beat.stop(); stopTimers(); speak('بدري! من جديد'); T=pickTeamTaskOf('fast'); await sleep(700); alive(id); continue; }
+      if(!k) k=await pickSide(id,{label:'مين خلّص أول؟'}); else { Beat.stop(); stopTimers(); }
+      break;
+    }
   } else {
-    const secs=T.kind==='loud'?6:12;
-    setMid(`<div class="icon">${T.i}</div><div class="say">${T.kind==='loud'?'يلاااا! 📣':'يلا!'}</div>${timerHTML(secs)}<div class="controls" id="ctrl"></div>`);
-    await countdownTimer(secs,id,{doneBtn:T.kind==='loud'?null:'✓ خلص'});
-    speak('مين ربح؟'); k=await pickSide(id,{label:T.kind==='loud'?'مين كان أعلى؟':'مين كان أحلى؟'});
+    // Relays. In the task relay the bigger team does fewer reps each, so both teams do about the same total.
+    const S=Math.min(red.length,blue.length), Bg=Math.max(red.length,blue.length);
+    const jobs=team=>team.map((_,j)=>{ const t=RELAY_TASKS[j%RELAY_TASKS.length]; const c=team.length>S?Math.max(2,Math.round(t.b*S/Bg)):t.b; return {e:t.e,n:t.n,c}; });
+    const J={a:jobs(red), b:jobs(blue)};
+    const need={a:T.kind==='relay'?Bg:red.length, b:T.kind==='relay'?Bg:blue.length};
+    const how=['🔴 الأحمر ضد 🔵 الأزرق',T.do];
+    if(T.kind==='taskrelay'&&red.length!==blue.length) how.push('الفريق الأكبر عدده أقل بكل مهمة، عشان تكون عادلة');
+    if(T.kind==='relay'&&red.length!==blue.length) how.push('الفريق الأصغر: أول واحد فيه بيرجع يلعب بالآخر');
+    how.push(TEAM_RULE[T.kind]);
+    if(T.kind==='taskrelay'){ R.members=red.map((i,j)=>({...P(i),name:P(i).name+' · '+J.a[j].e+' '+toAr(J.a[j].c)})); Bl.members=blue.map((i,j)=>({...P(i),name:P(i).name+' · '+J.b[j].e+' '+toAr(J.b[j].c)})); }
+    await explain(R,Bl,{i:T.i,t:T.t,how},id,{mult});
+    setMusic('low'); arena(R,Bl,`<div class="icon">${T.i}</div><div class="say">${T.t}</div>`); sides({a:'on',b:'on'});
+    await count321(id);
+    const done={a:0,b:0}; const A_=a(), B_=b();
+    const mark=()=>{ for(const [el,key] of [[A_,'a'],[B_,'b']]){
+      const ms=el.querySelectorAll('.members span'), n=ms.length;
+      ms.forEach((m,j)=>{ const fin = done[key]>=need[key] || j<done[key]; const cur = !fin && j===done[key]%n;
+        m.style.opacity=fin?'.45':'1'; m.style.textDecoration=fin?'line-through':'none'; m.style.outline=cur?'4px solid var(--sun)':'none'; m.style.transform=cur?'scale(1.12)':'none'; });
+      let t=el.querySelector('.tally'); if(!t){ t=document.createElement('div'); t.className='tally'; el.append(t); }
+      t.textContent='✅'.repeat(done[key])+'⬜'.repeat(need[key]-done[key]); } };
+    const job=key=>{ const j=J[key][Math.min(done[key],J[key].length-1)]; return `<bdi>${j.e} ${toAr(j.c)} ${j.n}</bdi>`; };
+    const curTask=()=>T.kind==='taskrelay'?`<div class="note">🔴 هلأ: ${job('a')}</div><div class="note">🔵 هلأ: ${job('b')}</div>`:'';
+    const midNow=()=>setMid(`<div class="icon">${T.i}</div><div class="say">يلا يلا!</div>${curTask()}<div class="note">كل ما حدا يخلّص… اكبسوا على فريقه</div>`);
+    midNow(); Beat.start(); mark(); [A_,B_].forEach(x=>{ x.classList.add('pick'); x.tabIndex=0; });
+    k=await new Promise((res,rej)=>{
+      const tap=key=>{ if(done[key]>=need[key]) return; done[key]++; SFX.ting(); mark(); midNow(); if(done[key]>=need[key]) res(key); };
+      A_.onclick=()=>tap('a'); B_.onclick=()=>tap('b');
+      const iv=setInterval(()=>{ if(id!==run){ clearInterval(iv); rej(new Quit()); } else if(!document.body.contains(A_)) clearInterval(iv); },200); });
+    [A_,B_].forEach(x=>{ x.classList.remove('pick'); x.onclick=null; }); Beat.stop();
   }
   const list=[];
   if(k==='tie') red.concat(blue).forEach(i=>list.push([i,2*mult]));
@@ -976,7 +1126,7 @@ async function teamRound(id,mult){
 /* ---------- Adults duel (kids judge, every kid gets a star) ---------- */
 async function adultsDuel(id){
   const [A0,B0]=shuffle(adults).slice(0,2); const A={...A0,adult:true}, B={...B0,adult:true};
-  const D=DUELS.find(d=>d.id===rnd(ADULT_DUELS));
+  const pool=DUELS.filter(d=>ADULT_DUELS.includes(d.id)); const D=pool.length?rnd(pool):rnd(DUELS);
   setRound('👨‍👩‍👧 جولة الكبار');
   setMusic('high'); arena(A,B,'',true); setMid('<div class="vs-mark">VS</div>'); SFX.vs();
   await speak(`${A.name} ضد ${B.name}!`); await sleep(600); alive(id);
