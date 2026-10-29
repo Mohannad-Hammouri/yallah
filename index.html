@@ -218,6 +218,30 @@ button{cursor:pointer}
 @keyframes bump{50%{transform:scale(1.18)}}
 .fly{position:fixed; z-index:50; font-size:56px; pointer-events:none; left:0; top:0}
 
+.result{gap:clamp(8px,1.6vh,16px)}
+.podium{display:flex; align-items:flex-end; justify-content:center; gap:clamp(16px,4vw,48px)}
+.podium .winner{position:relative; padding:14px 34px 18px}
+.podium .winner .em{font-size:clamp(70px,13vh,140px)}
+.podium .winner .nm{font-size:clamp(28px,4vw,48px)}
+.wcrown{position:absolute; top:-.55em; left:50%; transform:translateX(-50%) rotate(-10deg); font-size:clamp(44px,7vh,72px); animation:crownIn .8s .3s cubic-bezier(.3,1.6,.5,1) both}
+.brave{display:flex; flex-direction:column; align-items:center; gap:2px; background:var(--c); border-radius:30px; padding:10px 22px 12px; opacity:.95; animation:pop .6s .2s cubic-bezier(.3,1.6,.5,1) both}
+.brave .em{font-size:clamp(44px,8vh,80px); line-height:1}
+.brave .nm{font-size:clamp(20px,2.6vw,30px); font-weight:800}
+.badge-b{font-size:clamp(14px,1.8vw,19px); font-weight:800; background:rgba(0,0,0,.2); border-radius:999px; padding:2px 12px}
+.race{width:min(100%,920px); display:flex; flex-direction:column; gap:clamp(4px,1vh,10px)}
+.lane{--h:clamp(34px,calc(40vh / var(--n)),64px)}
+.track{position:relative; height:var(--h); border-radius:999px; background:repeating-linear-gradient(90deg, rgba(255,255,255,.06) 0 22px, rgba(255,255,255,.12) 22px 44px); box-shadow:inset 0 0 0 3px color-mix(in srgb, var(--c) 70%, transparent)}
+.flag{position:absolute; inset-inline-end:8px; top:50%; transform:translateY(-50%); font-size:calc(var(--h) * .62); line-height:1}
+.runner{position:absolute; top:50%; right:calc(4px + (100% - var(--h) - 60px) * var(--p)); transform:translateY(-50%); display:flex; align-items:center; gap:6px; transition:right .55s cubic-bezier(.3,1.4,.5,1); direction:rtl}
+html[dir="ltr"] .runner{direction:rtl}
+.runner .av{width:var(--h); height:var(--h); border-radius:50%; background:var(--paper); box-shadow:0 0 0 4px var(--c); display:grid; place-items:center; font-size:calc(var(--h) * .7); line-height:1; overflow:hidden}
+.runner .av .ph{width:100%; height:100%; box-shadow:none}
+.runner .st{min-width:1.6em; text-align:center; font-size:calc(var(--h) * .5); font-weight:800; color:var(--ink); background:var(--sun); border-radius:999px; padding:0 8px; font-variant-numeric:tabular-nums}
+.runner.lead::before{content:"👑"; position:absolute; top:calc(var(--h) * -.55); right:calc(var(--h) * .15); font-size:calc(var(--h) * .55)}
+.runner.bump .av{animation:bump .4s}
+.lane.moved .track{box-shadow:inset 0 0 0 3px var(--c), 0 0 0 4px var(--sun), 0 0 30px rgba(255,210,63,.5)}
+.lane{position:relative}
+.lane.moved .runner .st::after{content:" ⬆️"}
 .card{width:min(80%,400px); aspect-ratio:3/4; max-height:54vh; border-radius:32px; background:var(--pink); color:var(--paper); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:20px; box-shadow:0 12px 0 #C2335E; animation:flip .8s ease-out both; box-sizing:border-box}
 .card .em{font-size:clamp(80px,14vh,140px); line-height:1}
 .card b{font-size:clamp(30px,4.4vw,52px); text-wrap:balance}
@@ -386,12 +410,13 @@ const TEAM_TASKS = [
   {kind:'fast', i:'🪑', t:'اقعدوا!', do:'كل الفريق بيقعد عالأرض'},
   {kind:'fast', i:'🙌', t:'إيديكم لفوق!', do:'حطّوا إيديكم فوق بعض بالنص، وارفعوها مع بعض وصرّخوا يلااا'},
   {kind:'fast', i:'🤗', t:'حضن جماعي!', do:'كل الفريق بيحضن بعض مع بعض'},
-  {kind:'relay', i:'🏃', t:'سباق التتابع!', do:'كل واحد بدوره بيركض لعند الحيط ورجاع وبيضرب كفّ للي بعده'},
-  {kind:'relay', i:'🦀', t:'تتابع السلطعون!', do:'كل واحد بدوره بيمشي عالجنب لعند الحيط ورجاع وبيضرب كفّ للي بعده'},
-  {kind:'taskrelay', i:'🔁', t:'تتابع المهمات!', do:'كل لاعب إله مهمة: بيعملها وبيضرب كفّ للي بعده'},
-  {kind:'taskrelay', i:'🔁', t:'تتابع المهمات!', do:'كل لاعب إله مهمة: بيعملها وبيضرب كفّ للي بعده'}
+  {kind:'taskrelay', i:'🔁', t:'تتابع المهمات!', do:'كل لاعب إله مهمة بيعملها بدوره'},
+  {kind:'taskrelay', i:'🔁', t:'تتابع المهمات!', do:'كل لاعب إله مهمة بيعملها بدوره'},
+  {kind:'statue', i:'🧍', t:'الصنم المخفي!'},
+  {kind:'statue', i:'🧍', t:'الصنم المخفي!'}
 ];
-const TEAM_RULE = {relay:'لما كل الفريق يخلّص… أول فريق بيربح!', taskrelay:'لما كل الفريق يخلّص… أول فريق بيربح!', fast:'أول فريق بيخلّص بيربح'};
+const TEAM_RULE = {relay:'واحد واحد، والساعة بتحسب وقت كل لاعب. الفريق اللي مجموع وقته أقل بيربح!', taskrelay:'واحد واحد، والساعة بتحسب وقت كل لاعب. الفريق اللي مجموع وقته أقل بيربح!', fast:'أول فريق بيخلّص بيربح'};
+const POSES=[{e:'🙆',t:'إيديكم عالراس!'},{e:'🦩',t:'على رجل وحدة!'},{e:'🙌',t:'إيديكم لفوق!'},{e:'🧎',t:'اقعدوا عالأرض!'},{e:'🤗',t:'احضنوا حالكم!'},{e:'🐸',t:'قرفصاء زي الضفدع!'},{e:'🙈',t:'غطّوا عيونكم!'},{e:'💪',t:'ورّونا عضلاتكم!'}];
 const RELAY_TASKS = [{e:'🐸',n:'نطّات',b:5},{e:'👏',n:'تصفيقات',b:6},{e:'🏋️',n:'قعدات',b:4},{e:'🌀',n:'لفّات',b:3},{e:'🦶',n:'دبكات',b:6}];
 const ADULT_DUELS = ['carry','touch','blink','turn','face','monster','dizzy','flam','serious'];
 const RHYTHM = [{e:'👏',f:900},{e:'🦶',f:150},{e:'🙌',f:600}];
@@ -404,7 +429,7 @@ let voiceOn=true, sfxOn=true, monsterOn=true, muted=false;
 let songURL=null;
 const music=new Audio('song.mp3'); music.loop=true; music.preload='auto';
 let musicOK=true; music.addEventListener('error',()=>{ musicOK=false; });
-const LV={high:1, low:.7, dance:1, quiet:.35, turn:.2};
+const LV={high:1, low:.8, dance:1, quiet:.35, turn:.2};
 /* Volume goes through Web Audio gain where possible: iPhones and iPads ignore audio.volume, so fades and lowering never happened there. */
 function gainOf(el){ if(el._g!==undefined) return el._g; const c=ctx(); if(!c) return null;
   try{ const src=c.createMediaElementSource(el); const g=c.createGain(); src.connect(g).connect(c.destination); el._g=g; el.volume=1; }catch(e){ el._g=null; }
@@ -1016,38 +1041,72 @@ const BODY=[{e:'👃',t:'أنفك'},{e:'👂',t:'إذنك'},{e:'🦶',t:'رجل�
 const ANIMALS=['🐶','🐱','🐰','🦁','🐸','🐵','🐘','🦒','🐧','🐢','🐔','🐟','🦋','🐮'];
 
 /* Result: winner card, then stars fly into the scoreboard */
-function jarsHTML(){ return `<div class="jars">${kids.map((k,i)=>`<div class="jar" id="jar-${i}" style="--c:${k.c}"><div class="em">${av(k)}</div><div class="nm">${esc(k.name)}</div><div class="st">⭐ ${toAr(k.stars)}</div></div>`).join('')}</div>`; }
-function updateJar(i){ const d=$('#jar-'+i); if(!d) return; d.querySelector('.st').textContent='⭐ '+toAr(kids[i].stars); d.classList.remove('bump'); void d.offsetWidth; d.classList.add('bump','got'); }
-function flyStar(i,delay){ return new Promise(res=>{ setTimeout(()=>{
+/* Star race: every child has a lane; their picture moves toward the 🏆 as stars land on it. */
+function raceFinish(extra){ const mx=Math.max(0,...kids.map(k=>k.stars))+extra; G.finish=Math.max(G.finish||0, Math.ceil(G.total*1.4), mx+1); return G.finish; }
+function racePct(i){ return Math.min(1, kids[i].stars/(G.finish||1)); }
+function raceHTML(){
+  const top=Math.max(...kids.map(k=>k.stars));
+  const order=kids.map((k,i)=>i).sort((x,y)=>kids[y].stars-kids[x].stars||x-y);
+  return `<div class="race" id="race" style="--n:${kids.length}">${order.map(i=>{ const k=kids[i]; return `<div class="lane" id="lane-${i}" style="--c:${k.c}">
+    <div class="track"><span class="flag">🏆</span>
+      <div class="runner${k.stars>0&&k.stars===top?' lead':''}" id="jar-${i}" style="--p:${racePct(i)}"><span class="av">${av(k)}</span><span class="st">${toAr(k.stars)}</span></div>
+    </div></div>`; }).join('')}</div>`;
+}
+// Re-order the lanes most-stars-first, sliding each lane to its new place.
+function resortRace(){
+  const race=$('#race'); if(!race) return;
+  const lanes=[...race.children], before=new Map(lanes.map(l=>[l,l.getBoundingClientRect().top]));
+  const idx=l=>+l.id.split('-')[1];
+  lanes.sort((x,y)=>kids[idx(y)].stars-kids[idx(x)].stars||idx(x)-idx(y)).forEach(l=>race.append(l));
+  let up=false;
+  lanes.forEach(l=>{ const d=before.get(l)-l.getBoundingClientRect().top; if(!d) return;
+    l.animate([{transform:`translateY(${d}px)`},{transform:'none'}],{duration:1100,easing:'ease-in-out'});
+    if(d>0){ up=true; l.classList.add('moved'); setTimeout(()=>l.classList.remove('moved'),2200); } });
+  if(up) setTimeout(()=>{ tone(660,.12,'triangle',.2); tone(990,.2,'triangle',.2,.1); },300);
+  return up;
+}
+function updateJar(i){ const d=$('#jar-'+i); if(!d) return; d.querySelector('.st').textContent=toAr(kids[i].stars); d.style.setProperty('--p',racePct(i));
+  d.classList.remove('bump'); void d.offsetWidth; d.classList.add('bump');
+  const top=Math.max(...kids.map(k=>k.stars)); kids.forEach((k,j)=>{ const r=$('#jar-'+j); if(r) r.classList.toggle('lead',k.stars>0&&k.stars===top); }); }
+function flyStar(i,delay,n=0){ return new Promise(res=>{ setTimeout(()=>{
   const jar=$('#jar-'+i), from=$('#burst'); if(!jar||!from){ res(); return; }
-  const a=from.getBoundingClientRect(), b=jar.getBoundingClientRect();
+  const tgt=jar.querySelector('.av')||jar;
+  const a=from.getBoundingClientRect(), b=tgt.getBoundingClientRect();
   const s=document.createElement('span'); s.className='fly'; s.textContent='⭐'; document.body.append(s);
   const x0=a.left+a.width/2-28, y0=a.top+a.height/2-28, x1=b.left+b.width/2-28, y1=b.top+b.height/2-28;
   SFX.whoosh();
-  const an=s.animate([{transform:`translate(${x0}px,${y0}px) scale(.4)`},{transform:`translate(${(x0+x1)/2}px,${Math.min(y0,y1)-100}px) scale(1.6)`,offset:.45},{transform:`translate(${x1}px,${y1}px) scale(.8)`}],{duration:800,easing:'ease-in-out'});
-  an.onfinish=()=>{ s.remove(); SFX.ting(); res(); };
+  const an=s.animate([{transform:`translate(${x0}px,${y0}px) scale(.5)`},{transform:`translate(${(x0+x1)/2}px,${Math.min(y0,y1)-80}px) scale(1.5)`,offset:.45},{transform:`translate(${x1}px,${y1}px) scale(.6)`}],{duration:380,easing:'ease-in-out'});
+  an.onfinish=()=>{ s.remove(); tone(1100+n*90,.16,'triangle',.22); tone(1650+n*90,.22,'triangle',.18,.07); res(); };
 }, delay); }); }
-async function giveStars(list,id){ let delay=0; const fl=[];
-  for(const [i,n] of list){ for(let r=0;r<n;r++){ fl.push(flyStar(i,delay).then(()=>{ kids[i].stars++; updateJar(i); })); delay+=220; } }
-  await Promise.all(fl); alive(id); }
+async function giveStars(list,id){
+  // one star at a time so each child sees their own star land
+  let n=0;
+  for(const [i,cnt] of list){ for(let r=0;r<cnt;r++){ await flyStar(i,0,n++); kids[i].stars++; updateJar(i); await sleep(40); alive(id); } }
+  await sleep(800); alive(id); const moved=resortRace(); await sleep(moved===false?100:1300); alive(id);
+}
 
 async function result(res,A,B,id,{mult=1,D=null,stars=null,headline=null,note=null,next=null,showWinner=true}={}){
   const W = res==='a'?A:res==='b'?B:null, L = res==='a'?B:res==='b'?A:null;
   const msg = headline || (W ? `برافو ${W.name}!` : 'تعادل! الاتنين أبطال!');
-  const sub = note || (W ? `و${L.name} بياخد ⭐ نجمة الشجاعة` : 'كل واحد بياخد ⭐⭐');
-  screen(`<div class="center">
-    ${W&&showWinner?`<div class="winner" id="burst" style="--c:${W.c}"><div class="em">${av(W)}</div><div class="nm">🏆 ${esc(W.name)}</div></div>`
-       :`<div class="big-icon" id="burst">${W?'🏆':'🤝'}</div>`}
-    <div class="title" style="font-size:clamp(30px,4.6vw,58px)">${esc(msg)}</div>
-    <div class="lead">${esc(sub)}</div>
-    ${jarsHTML()}
-    <div class="controls" id="ctrl"></div></div>`);
-  setMusic('high'); SFX.fanfare(); confetti(40); speak(msg+'. '+sub);
+  const sub = note || (W ? '' : 'الاتنين بياخدوا ⭐⭐');
   if(!stars){ stars=[];
     if(!W){ stars.push([A.i,2*mult],[B.i,2*mult]); }
     else { stars.push([W.i,2*mult],[L.i,1*mult]); kids[W.i].wins++; if(D) kids[W.i].byDuel[D.id]=(kids[W.i].byDuel[D.id]||0)+1; }
   }
-  await sleep(900); alive(id);
+  const pending=Math.max(0,...stars.map(x=>x[1])); raceFinish(pending);
+  const duel = L && L.i!==undefined && L.i>=0 && kids[L.i];
+  const hero = W&&showWinner
+    ? `<div class="podium"><div class="winner" id="burst" style="--c:${W.c}"><span class="wcrown">👑</span><div class="em">${av(W)}</div><div class="nm">${esc(W.name)}</div></div>
+       ${duel?`<div class="brave" style="--c:${L.c}"><div class="em">${av(L)}</div><div class="nm">${esc(L.name)}</div><div class="badge-b">⭐ نجمة الشجاعة</div></div>`:''}</div>`
+    : `<div class="big-icon" id="burst">${W?'🏆':'🤝'}</div>`;
+  screen(`<div class="center result">
+    ${hero}
+    <div class="title" style="font-size:clamp(28px,4.2vw,52px)">${esc(msg)}</div>
+    ${sub?`<div class="lead">${esc(sub)}</div>`:''}
+    ${raceHTML()}
+    <div class="controls" id="ctrl"></div></div>`);
+  setMusic('high'); SFX.fanfare(); confetti(40); speak(msg+(sub?'. '+sub:''));
+  await sleep(600); alive(id);
   await giveStars(stars,id);
   await choose([{k:'n',cls:'go big',html:next||(G.round>=G.total?'🏆 النتيجة!':'الجولة الجاية ▶')}], id);
 }
@@ -1065,7 +1124,7 @@ async function teamRound(id,mult){
     SFX.drum(); await sleep(500); alive(id); }
   SFX.ting(); await sleep(1100); alive(id);
   R.members=red.map(P); Bl.members=blue.map(P);
-  let T=pickTeamTask(); let k;
+  let T=pickTeamTask(); let k; let relayNote=null;
   const a=()=>$('.side.a'), b=()=>$('.side.b');
   if(T.kind==='fast'){
     // The task stays secret until "يلا!", so nobody can start early.
@@ -1083,6 +1142,28 @@ async function teamRound(id,mult){
       if(!k) k=await pickSide(id,{label:'مين خلّص أول؟'}); else { Beat.stop(); stopTimers(); }
       break;
     }
+  } else if(T.kind==='statue'){
+    // Dance with the song; it stops at a random moment and a pose appears. First team fully frozen in the pose scores.
+    await explain(R,Bl,{i:T.i,t:T.t,how:['🔴 الأحمر ضد 🔵 الأزرق','الأغنية شغّالة: ارقصوا كلكم','لما توقف بتطلع وضعية: اعملوها كلكم وتجمّدوا!','أول فريق كله بيعملها صح بياخد نقطة. ٣ مرات']},id,{mult});
+    arena(R,Bl,''); const A_=a(), B_=b(); const pts={a:0,b:0}; const poses=shuffle(POSES).slice(0,3);
+    const tally=()=>{ for(const [el,key] of [[A_,'a'],[B_,'b']]){ let t=el.querySelector('.tally'); if(!t){ t=document.createElement('div'); t.className='tally'; el.append(t); } t.textContent='⭐'.repeat(pts[key])||'·'; } };
+    tally();
+    for(let r=0;r<3;r++){
+      sides({a:'on',b:'on'}); setMid(`<div class="note" style="color:var(--sun);font-weight:800">${toAr(r+1)} من ٣</div><div class="icon">💃</div><div class="say">ارقصوا!</div>`);
+      if(musicOK) setMusic('dance',true); else { Beat.start(); } if(r===0) speak('ارقصوا!');
+      await sleep(stopDelay()); alive(id); if(musicOK) setMusic('off',true); else Beat.stop();
+      const ps=poses[r]; SFX.buzz();
+      setMid(`<div class="icon pulse" style="font-size:clamp(90px,18vh,180px)">${ps.e}</div><div class="say" style="color:var(--sun)">${ps.t}</div><div class="note">أول فريق كله بيعملها وبيتجمّد… اكبسوا عليه</div><div class="controls"><button class="tie" id="stTie">🤝 مع بعض</button><button class="tie" id="stNone">ولا فريق</button></div>`);
+      speak(ps.t);
+      [A_,B_].forEach(x=>{ x.classList.add('pick'); x.tabIndex=0; });
+      const w=await new Promise((res,rej)=>{ A_.onclick=()=>res('a'); B_.onclick=()=>res('b'); $('#stTie').onclick=()=>res('tie'); $('#stNone').onclick=()=>res('none');
+        const iv=setInterval(()=>{ if(id!==run){ clearInterval(iv); rej(new Quit()); } else if(!document.body.contains(A_)) clearInterval(iv); },200); });
+      [A_,B_].forEach(x=>{ x.classList.remove('pick'); x.onclick=null; x.tabIndex=-1; });
+      if(w==='tie'){ pts.a++; pts.b++; } else if(w==='a'||w==='b') pts[w]++;
+      tally(); if(w!=='none') SFX.ting(); await sleep(600); alive(id);
+    }
+    setMusic('low'); sides({});
+    k = pts.a===pts.b ? 'tie' : (pts.a>pts.b?'a':'b');
   } else {
     // Relays. In the task relay the bigger team does fewer reps each, so both teams do about the same total.
     const S=Math.min(red.length,blue.length), Bg=Math.max(red.length,blue.length);
@@ -1096,23 +1177,33 @@ async function teamRound(id,mult){
     if(T.kind==='taskrelay'){ R.members=red.map((i,j)=>({...P(i),name:P(i).name+' · '+J.a[j].e+' '+toAr(J.a[j].c)})); Bl.members=blue.map((i,j)=>({...P(i),name:P(i).name+' · '+J.b[j].e+' '+toAr(J.b[j].c)})); }
     await explain(R,Bl,{i:T.i,t:T.t,how},id,{mult});
     setMusic('low'); arena(R,Bl,`<div class="icon">${T.i}</div><div class="say">${T.t}</div>`); sides({a:'on',b:'on'});
-    await count321(id);
-    const done={a:0,b:0}; const A_=a(), B_=b();
-    const mark=()=>{ for(const [el,key] of [[A_,'a'],[B_,'b']]){
+    // Turn by turn: one player at a time with their own stopwatch, so the parent only follows one child.
+    const A_=a(), B_=b(); const tot={a:0,b:0}, done={a:0,b:0};
+    const turns=[]; for(let i=0;i<Math.max(need.a,need.b);i++){ if(i<need.a) turns.push(['a',i]); if(i<need.b) turns.push(['b',i]); }
+    const fmt=v=>toAr(v.toFixed(1));
+    const mark=(curKey,curIdx)=>{ for(const [el,key] of [[A_,'a'],[B_,'b']]){
       const ms=el.querySelectorAll('.members span'), n=ms.length;
-      ms.forEach((m,j)=>{ const fin = done[key]>=need[key] || j<done[key]; const cur = !fin && j===done[key]%n;
-        m.style.opacity=fin?'.45':'1'; m.style.textDecoration=fin?'line-through':'none'; m.style.outline=cur?'4px solid var(--sun)':'none'; m.style.transform=cur?'scale(1.12)':'none'; });
+      ms.forEach((m,j)=>{ const fin=done[key]>=need[key]||j<Math.min(done[key],n)&&!(key===curKey&&j===curIdx%n); const cur=key===curKey&&j===curIdx%n;
+        m.style.opacity=fin&&!cur?'.45':'1'; m.style.textDecoration=fin&&!cur?'line-through':'none'; m.style.outline=cur?'4px solid var(--sun)':'none'; m.style.transform=cur?'scale(1.12)':'none'; });
       let t=el.querySelector('.tally'); if(!t){ t=document.createElement('div'); t.className='tally'; el.append(t); }
-      t.textContent='✅'.repeat(done[key])+'⬜'.repeat(need[key]-done[key]); } };
-    const job=key=>{ const j=J[key][Math.min(done[key],J[key].length-1)]; return `<bdi>${j.e} ${toAr(j.c)} ${j.n}</bdi>`; };
-    const curTask=()=>T.kind==='taskrelay'?`<div class="note">🔴 هلأ: ${job('a')}</div><div class="note">🔵 هلأ: ${job('b')}</div>`:'';
-    const midNow=()=>setMid(`<div class="icon">${T.i}</div><div class="say">يلا يلا!</div>${curTask()}<div class="note">كل ما حدا يخلّص… اكبسوا على فريقه</div>`);
-    midNow(); Beat.start(); mark(); [A_,B_].forEach(x=>{ x.classList.add('pick'); x.tabIndex=0; });
-    k=await new Promise((res,rej)=>{
-      const tap=key=>{ if(done[key]>=need[key]) return; done[key]++; SFX.ting(); mark(); midNow(); if(done[key]>=need[key]) res(key); };
-      A_.onclick=()=>tap('a'); B_.onclick=()=>tap('b');
-      const iv=setInterval(()=>{ if(id!==run){ clearInterval(iv); rej(new Quit()); } else if(!document.body.contains(A_)) clearInterval(iv); },200); });
-    [A_,B_].forEach(x=>{ x.classList.remove('pick'); x.onclick=null; }); Beat.stop();
+      t.textContent='⏱️ '+fmt(tot[key]); } };
+    for(const [key,i] of turns){
+      const team=key==='a'?red:blue, who=P(team[i%team.length]), J1=T.kind==='taskrelay'?J[key][i]:null;
+      sides(key==='a'?{a:'on',b:'dim'}:{a:'dim',b:'on'}); mark(key,i);
+      const what=J1?`<bdi>${J1.e} ${toAr(J1.c)} ${J1.n}</bdi>`:esc(T.do.replace('كل واحد بدوره ','').replace(' وبيضرب كفّ للي بعده',''));
+      setMid(`<div class="note">${key==='a'?'🔴':'🔵'} دور</div><div class="say">${av(who)} ${esc(who.name)}</div><div class="note" style="font-size:clamp(22px,3vw,34px);color:var(--paper)">${what}</div><div class="controls" id="ctrl"></div>`);
+      speak('دور '+who.name);
+      await choose([{k:'go',cls:'go',html:'▶ يلا'}], id);
+      SFX.go();
+      setMid(`<div class="say">${av(who)} ${esc(who.name)}</div><div class="note" style="font-size:clamp(22px,3vw,34px);color:var(--paper)">${what}</div><div class="watch" id="watch">٠٫٠</div><div class="controls" id="ctrl"></div>`);
+      const stop=stopwatch(id,'#watch'); let t=0;
+      try{ await choose([{k:'d',cls:'pink',html:'✓ خلص'}], id); } finally { t=stop(); }
+      tot[key]+=t; done[key]++; SFX.ting(); mark(null,-1); await sleep(500); alive(id);
+    }
+    sides({});
+    const diff=Math.abs(tot.a-tot.b);
+    k = diff<.5 ? 'tie' : (tot.a<tot.b?'a':'b');
+    relayNote=`🔴 ${fmt(tot.a)} ثانية · 🔵 ${fmt(tot.b)} ثانية`;
   }
   const list=[];
   if(k==='tie') red.concat(blue).forEach(i=>list.push([i,2*mult]));
@@ -1120,7 +1211,7 @@ async function teamRound(id,mult){
   const Wteam=k==='a'?R:k==='b'?Bl:null;
   await result(k, R, Bl, id, {stars:list,
     headline: Wteam?`فريق ${Wteam.name} ربح!`:'تعادل! الفريقين أبطال!',
-    note: Wteam?'الفائزين ⭐⭐ والفريق التاني ⭐':'كل واحد بياخد ⭐⭐'});
+    note: (relayNote?relayNote+' — ':'')+(Wteam?'الفائزين ⭐⭐ والفريق التاني ⭐':'كل واحد بياخد ⭐⭐')});
 }
 
 /* ---------- Adults duel (kids judge, every kid gets a star) ---------- */
