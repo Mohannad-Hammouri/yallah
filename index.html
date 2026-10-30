@@ -429,7 +429,7 @@ let voiceOn=true, sfxOn=true, monsterOn=true, muted=false;
 let songURL=null;
 const music=new Audio('song.mp3'); music.loop=true; music.preload='auto';
 let musicOK=true; music.addEventListener('error',()=>{ musicOK=false; });
-const LV={high:1, low:.8, dance:1, quiet:.35, turn:.2};
+const LV={high:1, low:.6, dance:1, quiet:.35, turn:.2};
 /* Volume goes through Web Audio gain where possible: iPhones and iPads ignore audio.volume, so fades and lowering never happened there. */
 function gainOf(el){ if(el._g!==undefined) return el._g; const c=ctx(); if(!c) return null;
   try{ const src=c.createMediaElementSource(el); const g=c.createGain(); src.connect(g).connect(c.destination); el._g=g; el.volume=1; }catch(e){ el._g=null; }
